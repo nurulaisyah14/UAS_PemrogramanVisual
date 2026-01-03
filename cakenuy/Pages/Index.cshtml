@@ -1,0 +1,327 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<!-- Hero Section with Animation -->
+<div class="hero-section">
+    <div class="hero-background">
+        <div class="floating-elements">
+            <div class="floating-cake">🧁</div>
+            <div class="floating-cake">🍰</div>
+            <div class="floating-cake">🎂</div>
+            <div class="floating-cake">🧁</div>
+            <div class="floating-cake">🍰</div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-6">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        <span class="brand-name">🧁 Cakenuy</span>
+                        <span class="hero-tagline">Sweetness in Every Bite</span>
+                    </h1>
+                    <p class="hero-description">
+                        Kue lezat dengan cinta & sentuhan manis untuk setiap momen spesial Anda. 
+                        Dibuat langsung oleh pastry chef bersertifikat Le Cordon Bleu 
+                        dengan pengalaman 8+ tahun dan resep rahasia yang telah teruji.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="/Menu" class="btn-primary-large">
+                            <span>🛒 Pesan Sekarang</span>
+                        </a>
+                        <a href="/About" class="btn-secondary-outline">
+                            <span>📖 Tentang Kami</span>
+                        </a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Happy Customers</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">8+</span>
+                            <span class="stat-label">Years Experience</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">5⭐</span>
+                            <span class="stat-label">Average Rating</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">🏆</span>
+                            <span class="stat-label">Award Winner</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-image">
+                    <div class="image-container">
+                        <div class="main-cake-image">
+                            <img src="/images/hero-cake.jpg" alt="Delicious Cake" 
+                                 onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&h=500&fit=crop&crop=center'">
+                        </div>
+                        <div class="floating-badge">
+                            <span>✨ Fresh Daily</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<section class="features-section" id="features">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2 class="section-title">Mengapa Memilih Cakenuy?</h2>
+            <p class="section-subtitle">Kami menghadirkan kue terbaik dengan standar kualitas tinggi</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <div class="icon-wrapper">✨</div>
+                </div>
+                <h3 class="feature-title">Bahan Premium</h3>
+                <p class="feature-description">Menggunakan bahan berkualitas tinggi dan fresh untuk rasa terbaik yang tak terlupakan</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <div class="icon-wrapper">🎨</div>
+                </div>
+                <h3 class="feature-title">Desain Custom</h3>
+                <p class="feature-description">Desain kue sesuai keinginan Anda untuk momen spesial dengan sentuhan artistik</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <div class="icon-wrapper">🚚</div>
+                </div>
+                <h3 class="feature-title">Pengiriman Cepat</h3>
+                <p class="feature-description">Dikirim fresh dan tepat waktu ke lokasi Anda dengan packaging yang aman</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <div class="icon-wrapper">👨‍🍳</div>
+                </div>
+                <h3 class="feature-title">Chef Berpengalaman</h3>
+                <p class="feature-description">Dibuat oleh chef berpengalaman dengan keahlian dan passion dalam dunia pastry</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <div class="icon-wrapper">💝</div>
+                </div>
+                <h3 class="feature-title">Packaging Cantik</h3>
+                <p class="feature-description">Kemasan yang indah dan elegan, cocok untuk hadiah di berbagai acara spesial</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <div class="icon-wrapper">🏆</div>
+                </div>
+                <h3 class="feature-title">Award Winner</h3>
+                <p class="feature-description">Telah memenangkan berbagai penghargaan untuk kualitas dan inovasi produk</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Menu Preview -->
+<section class="popular-menu-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2 class="section-title">Menu Populer</h2>
+            <p class="section-subtitle">Kue-kue favorit yang paling disukai pelanggan</p>
+        </div>
+        
+        <div class="popular-menu-grid">
+            <div class="menu-preview-card">
+                <div class="menu-image">
+                    <img src="/images/chocolate_cake.png" alt="Chocolate Delight"
+                         onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300&h=200&fit=crop&crop=center'">
+                    <div class="menu-badge">Best Seller</div>
+                </div>
+                <div class="menu-info">
+                    <h4>🍫 Chocolate Delight</h4>
+                    <p>Kue coklat berlapis dengan frosting coklat krim yang lembut</p>
+                    <div class="menu-price">Rp 180.000</div>
+                </div>
+            </div>
+            
+            <div class="menu-preview-card">
+                <div class="menu-image">
+                    <img src="/images/strawberry_cake.png" alt="Strawberry Bliss"
+                         onerror="this.src='https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=300&h=200&fit=crop&crop=center'">
+                    <div class="menu-badge">New</div>
+                </div>
+                <div class="menu-info">
+                    <h4>🍓 Strawberry Bliss</h4>
+                    <p>Kue strawberry segar dengan krim lembut dan strawberry premium</p>
+                    <div class="menu-price">Rp 200.000</div>
+                </div>
+            </div>
+            
+            <div class="menu-preview-card">
+                <div class="menu-image">
+                    <img src="/images/red_velvet_cake.png" alt="Red Velvet Romance"
+                         onerror="this.src='https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=300&h=200&fit=crop&crop=center'">
+                    <div class="menu-badge">Popular</div>
+                </div>
+                <div class="menu-info">
+                    <h4>❤️ Red Velvet Romance</h4>
+                    <p>Kue red velvet klasik dengan cream cheese frosting yang creamy</p>
+                    <div class="menu-price">Rp 195.000</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/Menu" class="btn-primary">Lihat Semua Menu</a>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="about-section" id="about">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="about-image">
+                    <img src="/images/about-us.jpg" alt="About Cakenuy"
+                         onerror="this.src='https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&h=400&fit=crop&crop=center'">
+                    <div class="about-badge">
+                        <span>Est. 2020</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="about-content">
+                    <h2 class="about-title">Tentang Cakenuy</h2>
+                    <div class="founder-intro">
+                        <h4 class="founder-name">👩‍🍳 Founder & Head Baker</h4>
+                        <p class="founder-quote">"Setiap kue yang saya buat adalah karya seni yang penuh cinta"</p>
+                    </div>
+                    <p class="about-description">
+                        Cakenuy didirikan pada tahun 2020 oleh seorang pastry chef berpengalaman 
+                        yang memiliki passion mendalam dalam dunia baking. Berawal dari hobi membuat kue untuk keluarga, 
+                        kini Cakenuy telah menjadi pilihan utama untuk berbagai momen spesial.
+                    </p>
+                    <p class="about-description">
+                        Dengan pengalaman lebih dari 8 tahun di industri kuliner dan pelatihan khusus pastry dari 
+                        Le Cordon Bleu, kami menghadirkan cita rasa autentik yang memadukan teknik klasik 
+                        dengan inovasi modern. Setiap resep adalah hasil riset dan eksperimen bertahun-tahun.
+                    </p>
+                    <div class="about-features">
+                        <div class="about-feature">
+                            <span class="feature-check">✓</span>
+                            <span>100% Bahan Natural & Premium</span>
+                        </div>
+                        <div class="about-feature">
+                            <span class="feature-check">✓</span>
+                            <span>Resep Rahasia Keluarga Nurul</span>
+                        </div>
+                        <div class="about-feature">
+                            <span class="feature-check">✓</span>
+                            <span>Dibuat dengan Cinta & Dedikasi</span>
+                        </div>
+                        <div class="about-feature">
+                            <span class="feature-check">✓</span>
+                            <span>Sertifikasi Halal & Food Safety</span>
+                        </div>
+                    </div>
+                    <div class="founder-achievements">
+                        <h5>🏆 Pencapaian:</h5>
+                        <ul>
+                            <li>Juara 1 Kompetisi Pastry Chef Indonesia 2019</li>
+                            <li>Sertifikat Le Cordon Bleu Paris</li>
+                            <li>500+ Pelanggan Puas di Seluruh Indonesia</li>
+                            <li>Featured di Majalah Kuliner Nusantara</li>
+                        </ul>
+                    </div>
+                    <a href="/About" class="btn-primary">💬 Tentang Nurul</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2 class="section-title">Apa Kata Mereka?</h2>
+            <p class="section-subtitle">Testimoni dari pelanggan setia Cakenuy</p>
+        </div>
+        
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    <div class="stars">⭐⭐⭐⭐⭐</div>
+                    <p>"Kue buatan Kak Nurul benar-benar luar biasa! Chocolate Delight-nya meleleh di mulut. Teknik bakingnya sangat profesional, terasa banget pengalaman Le Cordon Bleu-nya!"</p>
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">👩</div>
+                    <div class="author-info">
+                        <h5>Sarah Maharani</h5>
+                        <span>Jakarta • Regular Customer</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    <div class="stars">⭐⭐⭐⭐⭐</div>
+                    <p>"Sudah 3 tahun jadi pelanggan setia Cakenuy. Kualitas konsisten, pelayanan ramah, dan yang paling penting - rasa kuenya selalu bikin nagih! Terima kasih Kak Nurul!"</p>
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">👨</div>
+                    <div class="author-info">
+                        <h5>Budi Santoso</h5>
+                        <span>Bandung • Loyal Customer</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    <div class="stars">⭐⭐⭐⭐⭐</div>
+                    <p>"Packaging cantik banget, cocok untuk hadiah. Rasanya premium tapi harga terjangkau. Kak Nurul orangnya juga baik, selalu kasih tips baking gratis!"</p>
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">👩</div>
+                    <div class="author-info">
+                        <h5>Lisa Anggraini</h5>
+                        <span>Surabaya • Happy Customer</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content text-center">
+            <h2 class="cta-title">Siap Merasakan Kelezatan Cakenuy?</h2>
+            <p class="cta-description">
+                Pesan sekarang dan nikmati kue terbaik dari Cakenuy untuk momen spesial Anda. 
+                Setiap kue dibuat dengan cinta dan keahlian tinggi!
+            </p>
+            <div class="cta-buttons">
+                <a href="/Menu" class="btn-primary-large">🛒 Pesan Sekarang</a>
+                <a href="https://wa.me/6281234567890" class="btn-secondary-outline" target="_blank">💬 Chat Nurul</a>
+            </div>
+            <div class="cta-note">
+                <small>💝 Konsultasi gratis untuk custom cake & wedding cake</small>
+            </div>
+        </div>
+    </div>
+</section>

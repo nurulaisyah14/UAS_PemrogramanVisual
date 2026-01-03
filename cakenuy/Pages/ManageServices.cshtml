@@ -1,0 +1,759 @@
+@page
+@model cakenuy.Pages.ManageServicesModel
+@{
+    ViewData["Title"] = "Kelola Layanan";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-pink text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-cogs me-2"></i>
+                            Kelola Layanan
+                        </h4>
+                        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+                            <i class="fas fa-plus me-1"></i>
+                            Tambah Layanan
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Statistics Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-pink text-white">
+                                <div class="card-body text-center">
+                                    <h3>@Model.Services.Count(s => s.IsActive)</h3>
+                                    <p class="mb-0">Layanan Aktif</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-pink-light text-dark">
+                                <div class="card-body text-center">
+                                    <h3>@Model.Services.Count(s => !s.IsActive)</h3>
+                                    <p class="mb-0">Layanan Nonaktif</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-pink-gradient text-white">
+                                <div class="card-body text-center">
+                                    <h3>@Model.Services.Count()</h3>
+                                    <p class="mb-0">Total Layanan</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-pink-soft text-dark">
+                                <div class="card-body text-center">
+                                    <h3>@Model.Services.Where(s => s.IsActive).Count()</h3>
+                                    <p class="mb-0">Siap Digunakan</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Section -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">Filter Status:</label>
+                            <select class="form-select" id="statusFilter">
+                                <option value="">Semua Status</option>
+                                <option value="true">Aktif</option>
+                                <option value="false">Nonaktif</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Cari Layanan:</label>
+                            <input type="text" class="form-control" id="searchInput" placeholder="Nama layanan">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Urutkan:</label>
+                            <select class="form-select" id="sortOrder">
+                                <option value="name">Nama A-Z</option>
+                                <option value="order">Urutan</option>
+                                <option value="status">Status</option>
+                                <option value="created">Terbaru</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Services Table -->
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="servicesTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Urutan</th>
+                                    <th>Layanan</th>
+                                    <th>Deskripsi</th>
+                                    <th>Status</th>
+                                    <th>Dibuat</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var service in Model.Services.OrderBy(s => s.SortOrder))
+                                {
+                                    <tr data-status="@service.IsActive.ToString().ToLower()" 
+                                        data-search="@service.Name.ToLower()"
+                                        data-order="@service.SortOrder"
+                                        data-created="@service.CreatedAt.ToString("yyyy-MM-dd")">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-pink-soft text-dark me-2">#@service.SortOrder</span>
+                                                <div class="sort-handle" style="cursor: move;">
+                                                    <i class="fas fa-grip-vertical text-muted"></i>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="service-icon me-3">
+                                                    <span class="fs-4">@service.IconDisplay</span>
+                                                </div>
+                                                <div>
+                                                    <strong class="service-name">@service.Name</strong>
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        <span class="badge @service.Color text-white">@service.Color.Replace("bg-", "").ToUpper()</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p class="mb-0 service-description">@service.Description</p>
+                                        </td>
+                                        <td>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input status-toggle" 
+                                                       type="checkbox" 
+                                                       @(service.IsActive ? "checked" : "")
+                                                       data-service-id="@service.Id"
+                                                       onchange="toggleServiceStatus(@service.Id, this.checked)">
+                                                <label class="form-check-label">
+                                                    @if (service.IsActive)
+                                                    {
+                                                        <span class="badge bg-success">Aktif</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger">Nonaktif</span>
+                                                    }
+                                                </label>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                @service.CreatedAt.ToString("dd/MM/yyyy")
+                                                <br>
+                                                @service.CreatedAt.ToString("HH:mm")
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-outline-pink" 
+                                                        onclick="editService(@service.Id)" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-info" 
+                                                        onclick="previewService(@service.Id)" title="Preview">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger" 
+                                                        onclick="deleteService(@service.Id, '@service.Name')" title="Hapus">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (!Model.Services.Any())
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Belum ada layanan</h5>
+                            <p class="text-muted">Klik tombol "Tambah Layanan" untuk menambah layanan baru</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Service Modal -->
+<div class="modal fade" id="addServiceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Create">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>
+                        Tambah Layanan Baru
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label asp-for="NewService.Name" class="form-label"></label>
+                                <input asp-for="NewService.Name" class="form-control" placeholder="Contoh: Dine In">
+                                <span asp-validation-for="NewService.Name" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="NewService.SortOrder" class="form-label"></label>
+                                <input asp-for="NewService.SortOrder" class="form-control" type="number" min="1" value="@(Model.Services.Count() + 1)">
+                                <span asp-validation-for="NewService.SortOrder" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="NewService.Description" class="form-label"></label>
+                        <textarea asp-for="NewService.Description" class="form-control" rows="3" placeholder="Deskripsi layanan..."></textarea>
+                        <span asp-validation-for="NewService.Description" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="NewService.Icon" class="form-label"></label>
+                                <select asp-for="NewService.Icon" class="form-select" id="iconSelect">
+                                    <option value="">Pilih Icon</option>
+                                    @foreach (var icon in cakenuy.Models.ServiceDefaults.AvailableIcons)
+                                    {
+                                        <option value="@icon">@icon @icon</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="NewService.Icon" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="NewService.Color" class="form-label"></label>
+                                <select asp-for="NewService.Color" class="form-select">
+                                    <option value="">Pilih Warna</option>
+                                    @foreach (var color in cakenuy.Models.ServiceDefaults.AvailableColors)
+                                    {
+                                        <option value="@color.Class">@color.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="NewService.Color" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="NewService.IsActive" class="form-check-input" type="checkbox" checked>
+                            <label asp-for="NewService.IsActive" class="form-check-label">Aktifkan layanan</label>
+                        </div>
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="mb-3">
+                        <label class="form-label">Preview:</label>
+                        <div class="service-preview p-3 border rounded" id="servicePreview">
+                            <div class="d-flex align-items-center">
+                                <span class="preview-icon fs-4 me-3">🍽️</span>
+                                <div>
+                                    <strong class="preview-name">Nama Layanan</strong>
+                                    <br>
+                                    <small class="preview-description text-muted">Deskripsi layanan akan muncul di sini</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-pink">
+                        <i class="fas fa-save me-1"></i>
+                        Simpan Layanan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Service Modal -->
+<div class="modal fade" id="editServiceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Update" id="editServiceForm">
+                <input type="hidden" id="editServiceId" name="id">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>
+                        Edit Layanan
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="editServiceContent">
+                    <!-- Content will be loaded via AJAX -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-pink">
+                        <i class="fas fa-save me-1"></i>
+                        Update Layanan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Service Modal -->
+<div class="modal fade" id="previewServiceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-eye me-2"></i>
+                    Preview Layanan
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="previewServiceContent">
+                <!-- Content will be loaded via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Filter and search functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusFilter = document.getElementById('statusFilter');
+            const searchInput = document.getElementById('searchInput');
+            const sortOrder = document.getElementById('sortOrder');
+            const table = document.getElementById('servicesTable');
+            const rows = table.querySelectorAll('tbody tr');
+
+            function filterTable() {
+                const statusValue = statusFilter.value;
+                const searchValue = searchInput.value.toLowerCase();
+                const sortValue = sortOrder.value;
+
+                let visibleRows = Array.from(rows).filter(row => {
+                    const status = row.dataset.status;
+                    const searchText = row.dataset.search;
+
+                    const statusMatch = !statusValue || status === statusValue;
+                    const searchMatch = !searchValue || searchText.includes(searchValue);
+
+                    if (statusMatch && searchMatch) {
+                        row.style.display = '';
+                        return true;
+                    } else {
+                        row.style.display = 'none';
+                        return false;
+                    }
+                });
+
+                // Sort visible rows
+                if (sortValue === 'name') {
+                    visibleRows.sort((a, b) => a.dataset.search.localeCompare(b.dataset.search));
+                } else if (sortValue === 'order') {
+                    visibleRows.sort((a, b) => parseInt(a.dataset.order) - parseInt(b.dataset.order));
+                } else if (sortValue === 'created') {
+                    visibleRows.sort((a, b) => new Date(b.dataset.created) - new Date(a.dataset.created));
+                }
+
+                // Reorder DOM
+                const tbody = table.querySelector('tbody');
+                visibleRows.forEach(row => tbody.appendChild(row));
+            }
+
+            statusFilter.addEventListener('change', filterTable);
+            searchInput.addEventListener('input', filterTable);
+            sortOrder.addEventListener('change', filterTable);
+
+            // Preview functionality for add modal
+            const nameInput = document.querySelector('input[name="NewService.Name"]');
+            const descInput = document.querySelector('textarea[name="NewService.Description"]');
+            const iconSelect = document.getElementById('iconSelect');
+            
+            function updatePreview() {
+                const previewName = document.querySelector('.preview-name');
+                const previewDesc = document.querySelector('.preview-description');
+                const previewIcon = document.querySelector('.preview-icon');
+                
+                previewName.textContent = nameInput.value || 'Nama Layanan';
+                previewDesc.textContent = descInput.value || 'Deskripsi layanan akan muncul di sini';
+                previewIcon.textContent = iconSelect.value || '🍽️';
+            }
+
+            if (nameInput) nameInput.addEventListener('input', updatePreview);
+            if (descInput) descInput.addEventListener('input', updatePreview);
+            if (iconSelect) iconSelect.addEventListener('change', updatePreview);
+        });
+
+        // Toggle service status
+        function toggleServiceStatus(id, isActive) {
+            fetch(`/ManageServices?handler=ToggleStatus&id=${id}&isActive=${isActive}`, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update badge
+                    const toggle = document.querySelector(`input[data-service-id="${id}"]`);
+                    const label = toggle.nextElementSibling;
+                    const badge = label.querySelector('.badge');
+                    
+                    if (isActive) {
+                        badge.className = 'badge bg-success';
+                        badge.textContent = 'Aktif';
+                    } else {
+                        badge.className = 'badge bg-danger';
+                        badge.textContent = 'Nonaktif';
+                    }
+                    
+                    // Show success message
+                    showToast('Status layanan berhasil diubah!', 'success');
+                } else {
+                    // Revert toggle
+                    toggle.checked = !isActive;
+                    showToast('Gagal mengubah status layanan', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Revert toggle
+                const toggle = document.querySelector(`input[data-service-id="${id}"]`);
+                toggle.checked = !isActive;
+                showToast('Terjadi kesalahan', 'error');
+            });
+        }
+
+        // Edit service function
+        function editService(id) {
+            fetch(`/ManageServices?handler=GetService&id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('editServiceId').value = data.id;
+                    document.getElementById('editServiceContent').innerHTML = `
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label">Nama Layanan</label>
+                                    <input name="Name" class="form-control" value="${data.name}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Urutan</label>
+                                    <input name="SortOrder" class="form-control" type="number" value="${data.sortOrder}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="Description" class="form-control" rows="3" required>${data.description}</textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Icon</label>
+                                    <select name="Icon" class="form-select">
+                                        <option value="">Pilih Icon</option>
+                                        <option value="🍽️" ${data.icon === '🍽️' ? 'selected' : ''}>🍽️🍽️</option>
+                                        <option value="🥡" ${data.icon === '🥡' ? 'selected' : ''}>🥡 🥡</option>
+                                        <option value="🚚" ${data.icon === '🚚' ? 'selected' : ''}>🚚 🚚</option>
+                                        <option value="📱" ${data.icon === '📱' ? 'selected' : ''}>📱 📱</option>
+                                        <option value="💳" ${data.icon === '💳' ? 'selected' : ''}>💳 💳</option>
+                                        <option value="🎂" ${data.icon === '🎂' ? 'selected' : ''}>🎂 🎂</option>
+                                        <option value="🧁" ${data.icon === '🧁' ? 'selected' : ''}>🧁 🧁</option>
+                                        <option value="☕" ${data.icon === '☕' ? 'selected' : ''}>☕ ☕</option>
+                                        <option value="🍰" ${data.icon === '🍰' ? 'selected' : ''}>🍰 🍰</option>
+                                        <option value="🎉" ${data.icon === '🎉' ? 'selected' : ''}>🎉 🎉</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Warna</label>
+                                    <select name="Color" class="form-select">
+                                        <option value="">Pilih Warna</option>
+                                        <option value="bg-pink" ${data.color === 'bg-pink' ? 'selected' : ''}>Pink</option>
+                                        <option value="bg-success" ${data.color === 'bg-success' ? 'selected' : ''}>Hijau</option>
+                                        <option value="bg-info" ${data.color === 'bg-info' ? 'selected' : ''}>Biru</option>
+                                        <option value="bg-warning" ${data.color === 'bg-warning' ? 'selected' : ''}>Kuning</option>
+                                        <option value="bg-danger" ${data.color === 'bg-danger' ? 'selected' : ''}>Merah</option>
+                                        <option value="bg-purple" ${data.color === 'bg-purple' ? 'selected' : ''}>Ungu</option>
+                                        <option value="bg-secondary" ${data.color === 'bg-secondary' ? 'selected' : ''}>Abu-abu</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input name="IsActive" class="form-check-input" type="checkbox" ${data.isActive ? 'checked' : ''}>
+                                <label class="form-check-label">Aktifkan layanan</label>
+                            </div>
+                        </div>
+                    `;
+                    new bootstrap.Modal(document.getElementById('editServiceModal')).show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Terjadi kesalahan saat memuat data layanan', 'error');
+                });
+        }
+
+        // Preview service function
+        function previewService(id) {
+            fetch(`/ManageServices?handler=GetService&id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('previewServiceContent').innerHTML = `
+                        <div class="service-preview-card p-4 border rounded ${data.color}">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="fs-1 me-3">${data.icon || '🍽️'}</span>
+                                <div>
+                                    <h4 class="mb-1 text-white">${data.name}</h4>
+                                    <span class="badge bg-light text-dark">Urutan: ${data.sortOrder}</span>
+                                </div>
+                            </div>
+                            <p class="text-white mb-3">${data.description}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge ${data.isActive ? 'bg-success' : 'bg-danger'}">${data.isActive ? 'Aktif' : 'Nonaktif'}</span>
+                                <small class="text-white-50">Dibuat: ${new Date(data.createdAt).toLocaleDateString('id-ID')}</small>
+                            </div>
+                        </div>
+                    `;
+                    new bootstrap.Modal(document.getElementById('previewServiceModal')).show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Terjadi kesalahan saat memuat preview', 'error');
+                });
+        }
+
+        // Delete service function
+        function deleteService(id, name) {
+            if (confirm(`Apakah Anda yakin ingin menghapus layanan "${name}"?`)) {
+                fetch(`/ManageServices?handler=Delete&id=${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        showToast('Gagal menghapus layanan', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Terjadi kesalahan saat menghapus layanan', 'error');
+                });
+            }
+        }
+
+        // Toast notification function
+        function showToast(message, type) {
+            // Simple toast implementation
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+}
+
+<style>
+    /* Pink Theme Colors - Same as ManageEmployees */
+    .bg-pink {
+        background: linear-gradient(135deg, #ff6b9d, #ff8fab) !important;
+    }
+    
+    .bg-pink-light {
+        background-color: #ffe0e6 !important;
+    }
+    
+    .bg-pink-gradient {
+        background: linear-gradient(135deg, #ff8fab, #ffb3c1) !important;
+    }
+    
+    .bg-pink-soft {
+        background-color: #fff0f3 !important;
+    }
+    
+    .text-pink {
+        color: #ff6b9d !important;
+    }
+    
+    .btn-pink {
+        background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-pink:hover {
+        background: linear-gradient(135deg, #ff5a8a, #ff7a9a);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+    }
+    
+    .btn-outline-pink {
+        border: 2px solid #ff6b9d;
+        color: #ff6b9d;
+        background: transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-pink:hover {
+        background: #ff6b9d;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+    }
+    
+    .badge.bg-pink-soft {
+        background-color: #ffe0e6 !important;
+        color: #d63384 !important;
+        border: 1px solid #ffb3c1;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(255, 107, 157, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(255, 107, 157, 0.15);
+    }
+    
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        border: none;
+    }
+    
+    .table th {
+        font-weight: 600;
+        font-size: 0.875rem;
+        background-color: #2d3748;
+        color: white;
+        border: none;
+    }
+    
+    .table td {
+        border-color: #ffe0e6;
+        vertical-align: middle;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: #fff8f9;
+    }
+    
+    .service-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #fff0f3, #ffe0e6);
+        border-radius: 10px;
+    }
+    
+    .service-preview {
+        background: linear-gradient(135deg, #fff8f9, #ffe0e6);
+        border: 2px dashed #ff6b9d !important;
+    }
+    
+    .service-preview-card {
+        background: linear-gradient(135deg, #ff6b9d, #ff8fab) !important;
+    }
+    
+    .sort-handle:hover {
+        color: #ff6b9d !important;
+    }
+    
+    .form-control:focus {
+        border-color: #ff6b9d;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 157, 0.25);
+    }
+    
+    .form-select:focus {
+        border-color: #ff6b9d;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 157, 0.25);
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+        color: white;
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+    
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+    
+    .form-check-input:checked {
+        background-color: #ff6b9d;
+        border-color: #ff6b9d;
+    }
+    
+    .btn-group-sm > .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    /* Additional colors for services */
+    .bg-purple {
+        background: linear-gradient(135deg, #6f42c1, #8a63d2) !important;
+    }
+    
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .card-body h3 {
+            font-size: 1.5rem;
+        }
+        
+        .btn-group-sm > .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.7rem;
+        }
+        
+        .service-icon {
+            width: 40px;
+            height: 40px;
+        }
+    }
+</style>

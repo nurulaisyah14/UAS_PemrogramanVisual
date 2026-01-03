@@ -1,0 +1,1213 @@
+@page
+@model cakenuy.Pages.CartModel
+@{
+    ViewData["Title"] = "Pesanan";
+    // Force browser refresh
+    Response.Headers.Add("Cache-Control", "no-cache, no-store, must-revalidate");
+    Response.Headers.Add("Pragma", "no-cache");
+    Response.Headers.Add("Expires", "0");
+}
+
+<div class="container py-4" id="orderContent">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 text-pink mb-3">🛒 Pesanan</h1>
+                <p class="lead text-muted">Pilih layanan dan menu favorit Anda</p>
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                    <button type="button" class="btn btn-outline-pink" onclick="printOrder()" id="printBtn" style="display: none;">
+                        <i class="fas fa-print me-2"></i>
+                        Print Pesanan
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="clearOrder()" id="clearBtn" style="display: none;">
+                        <i class="fas fa-trash me-2"></i>
+                        Bersihkan
+                    </button>
+                </div>
+            </div>
+
+            @if (!Model.AvailableServices.Any())
+            {
+                <div class="alert alert-warning text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                    <h4>Layanan Tidak Tersedia</h4>
+                    <p>Maaf, saat ini tidak ada layanan yang tersedia. Silakan hubungi kami untuk informasi lebih lanjut.</p>
+                    <a href="/" class="btn btn-pink">Kembali ke Home</a>
+                </div>
+            }
+            else if (Model.IsOrderCompleted && Model.CompletedOrder != null)
+            {
+                <!-- Order Success & Receipt -->
+                <div class="alert alert-success text-center mb-4">
+                    <i class="fas fa-check-circle fa-3x mb-3"></i>
+                    <h3>Pesanan Berhasil!</h3>
+                    <p class="mb-0">Terima kasih telah memesan di Cakenuy. Pesanan Anda sedang diproses.</p>
+                </div>
+
+                <!-- Receipt/Struk Content -->
+                <div class="card shadow-lg border-0 mb-4" id="receiptContent">
+                    <div class="card-body p-4">
+                        <!-- Receipt Header -->
+                        <div class="text-center mb-4 pb-3 border-bottom">
+                            <h2 class="text-pink mb-2">Cakenuy</h2>
+                            <h4 class="mb-1">STRUK PESANAN</h4>
+                            <p class="text-muted mb-0">Order #@Model.CompletedOrder.Id.ToString("D6")</p>
+                            <small class="text-muted">@DateTime.Now.ToString("dd MMMM yyyy, HH:mm") WIB</small>
+                        </div>
+
+                        <div class="row">
+                            <!-- Customer Information -->
+                            <div class="col-md-6 mb-4">
+                                <h5 class="text-pink mb-3 border-bottom pb-2">
+                                    <i class="fas fa-user me-2"></i>
+                                    INFORMASI PELANGGAN
+                                </h5>
+                                <div class="receipt-info">
+                                    <div class="info-row">
+                                        <span class="info-label">Nama:</span>
+                                        <span class="info-value">@Model.CompletedOrder.CustomerName</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">No. HP:</span>
+                                        <span class="info-value">@Model.CompletedOrder.PhoneNumber</span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(Model.CompletedOrder.Email))
+                                    {
+                                        <div class="info-row">
+                                            <span class="info-label">Email:</span>
+                                            <span class="info-value">@Model.CompletedOrder.Email</span>
+                                        </div>
+                                    }
+                                    <div class="info-row">
+                                        <span class="info-label">Layanan:</span>
+                                        <span class="info-value">
+                                            <span class="service-badge @Model.CompletedOrder.Service?.Color">
+                                                @Model.CompletedOrder.Service?.IconDisplay @Model.CompletedOrder.Service?.Name
+                                            </span>
+                                        </span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(Model.CompletedOrder.DeliveryAddress))
+                                    {
+                                        <div class="info-row">
+                                            <span class="info-label">Alamat:</span>
+                                            <span class="info-value">@Model.CompletedOrder.DeliveryAddress</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Order Information -->
+                            <div class="col-md-6 mb-4">
+                                <h5 class="text-pink mb-3 border-bottom pb-2">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    INFORMASI PESANAN
+                                </h5>
+                                <div class="receipt-info">
+                                    <div class="info-row">
+                                        <span class="info-label">Tanggal Pesan:</span>
+                                        <span class="info-value">@Model.CompletedOrder.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Waktu Ambil/Kirim:</span>
+                                        <span class="info-value">@Model.CompletedOrder.OrderDateTime.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Status:</span>
+                                        <span class="info-value">
+                                            <span class="badge @Model.CompletedOrder.StatusColor">@Model.CompletedOrder.StatusDisplay</span>
+                                        </span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(Model.CompletedOrder.Notes))
+                                    {
+                                        <div class="info-row">
+                                            <span class="info-label">Catatan:</span>
+                                            <span class="info-value">@Model.CompletedOrder.Notes</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Items -->
+                        <div class="mt-4">
+                            <h5 class="text-pink mb-3 border-bottom pb-2">
+                                <i class="fas fa-birthday-cake me-2"></i>
+                                DETAIL PESANAN
+                            </h5>
+                            <div class="table-responsive">
+                                <table class="table table-borderless receipt-table">
+                                    <thead>
+                                        <tr class="border-bottom">
+                                            <th class="ps-0">MENU</th>
+                                            <th class="text-center">QTY</th>
+                                            <th class="text-end">HARGA</th>
+                                            <th class="text-end pe-0">TOTAL</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.CompletedOrder.OrderItems)
+                                        {
+                                            <tr>
+                                                <td class="ps-0">
+                                                    <div>
+                                                        <strong>@item.MenuItem?.Name</strong>
+                                                        @if (!string.IsNullOrEmpty(item.Notes))
+                                                        {
+                                                            <br>
+                                                            <small class="text-muted">Note: @item.Notes</small>
+                                                        }
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">@item.Quantity</td>
+                                                <td class="text-end">Rp @item.UnitPrice.ToString("N0")</td>
+                                                <td class="text-end pe-0"><strong>Rp @item.TotalPrice.ToString("N0")</strong></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Total Section -->
+                            <div class="border-top pt-3 mt-3">
+                                <div class="row">
+                                    <div class="col-8">
+                                        <h4 class="mb-0"><strong>TOTAL PESANAN:</strong></h4>
+                                    </div>
+                                    <div class="col-4 text-end">
+                                        <h4 class="mb-0 text-pink"><strong>Rp @Model.CompletedOrder.TotalAmount.ToString("N0")</strong></h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="text-center mt-4 pt-4 border-top">
+                            <p class="mb-2"><strong>Terima kasih telah memesan di Cakenuy!</strong></p>
+                            <p class="text-muted mb-1">WhatsApp: 0812-3456-7890 | Email: info@cakenuy.com</p>
+                            <p class="text-muted mb-0">Simpan struk ini sebagai bukti pesanan</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-center mb-4">
+                    <button type="button" class="btn btn-pink btn-lg me-3" onclick="printReceipt()">
+                        <i class="fas fa-print me-2"></i>
+                        Print Struk
+                    </button>
+                    <button type="button" class="btn btn-outline-pink btn-lg me-3" onclick="downloadPDF()">
+                        <i class="fas fa-file-pdf me-2"></i>
+                        Download PDF
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-lg" onclick="newOrder()">
+                        <i class="fas fa-plus me-2"></i>
+                        Pesan Lagi
+                    </button>
+                </div>
+            }
+            else
+            {
+                @if (!string.IsNullOrEmpty(ViewData["ErrorMessage"]?.ToString()))
+                {
+                    <div class="alert alert-danger">
+                        @ViewData["ErrorMessage"]
+                    </div>
+                }
+                
+                @if (!ModelState.IsValid)
+                {
+                    <div class="alert alert-warning">
+                        <h5>Validation Errors:</h5>
+                        <ul>
+                            @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        </ul>
+                    </div>
+                }
+                
+                <form method="post" id="orderForm">
+                    <div class="row">
+                        <!-- Service Selection -->
+                        <div class="col-lg-8">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-pink text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-concierge-bell me-2"></i>
+                                        Pilih Layanan
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        @foreach (var service in Model.AvailableServices)
+                                        {
+                                            <div class="col-md-4 mb-3">
+                                                <div class="service-option">
+                                                    <input type="radio" 
+                                                           name="NewOrder.ServiceId" 
+                                                           value="@service.Id" 
+                                                           id="service_@service.Id"
+                                                           class="service-radio"
+                                                           onchange="selectService(@service.Id, '@service.Name')"
+                                                           required>
+                                                    <label for="service_@service.Id" class="service-card @service.Color">
+                                                        <div class="service-icon">
+                                                            <span class="fs-1">@service.IconDisplay</span>
+                                                        </div>
+                                                        <div class="service-info">
+                                                            <h6 class="service-name">@service.Name</h6>
+                                                            <p class="service-desc">@service.Description</p>
+                                                        </div>
+                                                        <div class="service-check">
+                                                            <i class="fas fa-check-circle"></i>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                    <span asp-validation-for="NewOrder.ServiceId" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <!-- Menu Selection -->
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-pink text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-birthday-cake me-2"></i>
+                                        Pilih Menu
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row" id="menuItems">
+                                        @foreach (var item in Model.MenuItems.Where(m => m.IsAvailable))
+                                        {
+                                            <div class="col-md-6 col-lg-4 mb-4">
+                                                <div class="menu-card">
+                                                    <div class="menu-image">
+                                                        <img src="@item.ImageUrl" alt="@item.Name" 
+                                                             onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300&h=200&fit=crop&crop=center'">
+                                                        <div class="menu-category">@item.Category</div>
+                                                    </div>
+                                                    <div class="menu-info">
+                                                        <h6 class="menu-name">@item.Name</h6>
+                                                        <p class="menu-desc">@item.Description</p>
+                                                        <div class="menu-price">Rp @item.Price.ToString("N0")</div>
+                                                        <div class="menu-actions">
+                                                            <div class="quantity-control">
+                                                                <button type="button" class="btn btn-sm btn-outline-pink" 
+                                                                        onclick="decreaseQuantity(@item.Id)">-</button>
+                                                                <input type="number" 
+                                                                       id="qty_@item.Id" 
+                                                                       class="quantity-input" 
+                                                                       value="0" 
+                                                                       min="0" 
+                                                                       max="10"
+                                                                       onchange="updateQuantity(@item.Id, this.value, @item.Price)">
+                                                                <button type="button" class="btn btn-sm btn-outline-pink" 
+                                                                        onclick="increaseQuantity(@item.Id)">+</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Summary & Customer Info -->
+                        <div class="col-lg-4">
+                            <div class="sticky-top" style="top: 20px;">
+                                <!-- Order Summary -->
+                                <div class="card shadow-sm mb-4" id="orderSummaryCard">
+                                    <div class="card-header bg-pink text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-receipt me-2"></i>
+                                            Ringkasan Pesanan
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="selectedService" class="mb-3" style="display: none;">
+                                            <div class="d-flex align-items-center">
+                                                <span class="service-icon-small me-2" id="selectedServiceIcon"></span>
+                                                <div>
+                                                    <strong id="selectedServiceName">Pilih Layanan</strong>
+                                                    <br>
+                                                    <small class="text-muted">Layanan yang dipilih</small>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                        </div>
+                                        
+                                        <div id="orderItems">
+                                            <div class="text-center text-muted py-3">
+                                                <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                                                <p>Belum ada item dipilih</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <hr>
+                                        <div class="d-flex justify-content-between">
+                                            <strong>Total:</strong>
+                                            <strong class="text-pink" id="totalAmount">Rp 0</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Customer Information -->
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-pink text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-user me-2"></i>
+                                            Informasi Pelanggan
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label asp-for="NewOrder.CustomerName" class="form-label"></label>
+                                            <input asp-for="NewOrder.CustomerName" class="form-control" placeholder="Nama lengkap">
+                                            <span asp-validation-for="NewOrder.CustomerName" class="text-danger"></span>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label asp-for="NewOrder.PhoneNumber" class="form-label"></label>
+                                            <input asp-for="NewOrder.PhoneNumber" class="form-control" placeholder="08xxxxxxxxxx">
+                                            <span asp-validation-for="NewOrder.PhoneNumber" class="text-danger"></span>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label asp-for="NewOrder.Email" class="form-label"></label>
+                                            <input asp-for="NewOrder.Email" class="form-control" placeholder="email@example.com (opsional)">
+                                            <span asp-validation-for="NewOrder.Email" class="text-danger"></span>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label asp-for="NewOrder.DeliveryAddress" class="form-label"></label>
+                                            <textarea asp-for="NewOrder.DeliveryAddress" class="form-control" rows="3" placeholder="Alamat lengkap (wajib untuk delivery, opsional untuk dine in/take away)"></textarea>
+                                            <span asp-validation-for="NewOrder.DeliveryAddress" class="text-danger"></span>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label asp-for="NewOrder.OrderDateTime" class="form-label">
+                                                <i class="fas fa-calendar-alt me-1"></i>
+                                                Tanggal & Waktu Pengambilan/Pengiriman
+                                            </label>
+                                            <input asp-for="NewOrder.OrderDateTime" class="form-control" type="datetime-local" 
+                                                   value="@DateTime.Now.AddHours(2).ToString("yyyy-MM-ddTHH:mm")"
+                                                   min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
+                                                   step="60"
+                                                   pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}">
+                                            <span asp-validation-for="NewOrder.OrderDateTime" class="text-danger"></span>
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                Minimal 2 jam dari sekarang. Waktu dalam format 24 jam (WIB).
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label asp-for="NewOrder.Notes" class="form-label"></label>
+                                            <textarea asp-for="NewOrder.Notes" class="form-control" rows="3" placeholder="Catatan khusus (opsional)"></textarea>
+                                            <span asp-validation-for="NewOrder.Notes" class="text-danger"></span>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-pink w-100" id="submitOrder" disabled>
+                                            <i class="fas fa-paper-plane me-2"></i>
+                                            Kirim Pesanan
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        let selectedItems = {};
+        let totalAmount = 0;
+        let selectedServiceId = null;
+        let selectedServiceName = '';
+
+        // Menu items data
+        const menuItems = @Html.Raw(Json.Serialize(Model.MenuItems.Where(m => m.IsAvailable).Select(m => new { m.Id, m.Name, m.Price })));
+
+        @if (Model.IsOrderCompleted && Model.CompletedOrder != null)
+        {
+            <text>
+            // Order data for completed order
+            const completedOrderData = {
+                id: '@Model.CompletedOrder.Id.ToString("D6")',
+                customerName: '@Html.Raw(Model.CompletedOrder.CustomerName?.Replace("'", "\\'"))',
+                phoneNumber: '@Model.CompletedOrder.PhoneNumber',
+                email: '@Model.CompletedOrder.Email',
+                serviceName: '@Model.CompletedOrder.Service?.Name',
+                serviceIcon: '@Model.CompletedOrder.Service?.IconDisplay',
+                deliveryAddress: '@Html.Raw(Model.CompletedOrder.DeliveryAddress?.Replace("'", "\\'"))',
+                orderDateTime: '@Model.CompletedOrder.OrderDateTime.ToString("dd/MM/yyyy HH:mm")',
+                createdAt: '@Model.CompletedOrder.CreatedAt.ToString("dd/MM/yyyy HH:mm")',
+                notes: '@Html.Raw(Model.CompletedOrder.Notes?.Replace("'", "\\'"))',
+                totalAmount: '@Model.CompletedOrder.TotalAmount.ToString("N0")',
+                items: [
+                    @foreach (var item in Model.CompletedOrder.OrderItems)
+                    {
+                        <text>{
+                            name: '@Html.Raw(item.MenuItem?.Name?.Replace("'", "\\'"))',
+                            quantity: @item.Quantity,
+                            unitPrice: '@item.UnitPrice.ToString("N0")',
+                            totalPrice: '@item.TotalPrice.ToString("N0")',
+                            notes: '@Html.Raw(item.Notes?.Replace("'", "\\'"))'
+                        },</text>
+                    }
+                ]
+            };</text>
+        }
+
+        // Functions that work for both states
+        function printReceipt() {
+            @if (Model.IsOrderCompleted && Model.CompletedOrder != null)
+            {
+                <text>
+                // Create items HTML for completed order
+                let itemsHtml = '';
+                completedOrderData.items.forEach(item => {
+                    if (item.name) {
+                        itemsHtml += `
+                            <tr>
+                                <td style="padding: 5px 2px; border-bottom: 1px dotted #ccc;">
+                                    <strong>${item.name}</strong>
+                                    ${item.notes ? `<br><small>Note: ${item.notes}</small>` : ''}
+                                </td>
+                                <td style="padding: 5px 2px; text-align: center; border-bottom: 1px dotted #ccc;">${item.quantity}</td>
+                                <td style="padding: 5px 2px; text-align: right; border-bottom: 1px dotted #ccc;">Rp ${item.unitPrice}</td>
+                                <td style="padding: 5px 2px; text-align: right; border-bottom: 1px dotted #ccc;"><strong>Rp ${item.totalPrice}</strong></td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                const printContent = `
+                    <html>
+                    <head>
+                        <title>Struk Pesanan #${completedOrderData.id} - Cakenuy</title>
+                        <style>
+                            body { 
+                                font-family: 'Courier New', monospace; 
+                                margin: 20px; 
+                                font-size: 12px;
+                                line-height: 1.4;
+                                max-width: 400px;
+                            }
+                            .text-center { text-align: center; }
+                            .border-bottom { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+                            .border-top { border-top: 2px solid #333; padding-top: 15px; margin-top: 15px; }
+                            .dotted-line { border-bottom: 1px dotted #333; margin: 10px 0; }
+                            .info-row { 
+                                display: flex; 
+                                justify-content: space-between; 
+                                margin-bottom: 5px;
+                                padding-bottom: 3px;
+                            }
+                            .info-label { font-weight: bold; }
+                            table { 
+                                width: 100%; 
+                                border-collapse: collapse; 
+                                margin: 10px 0;
+                            }
+                            th { 
+                                font-weight: bold; 
+                                border-bottom: 2px solid #333;
+                                padding: 5px 2px;
+                                font-size: 11px;
+                            }
+                            .header {
+                                text-align: center;
+                                margin-bottom: 20px;
+                                padding-bottom: 15px;
+                                border-bottom: 2px solid #333;
+                            }
+                            .footer {
+                                text-align: center;
+                                margin-top: 20px;
+                                padding-top: 15px;
+                                border-top: 2px solid #333;
+                                font-size: 10px;
+                            }
+                            h2 { font-size: 18px; margin: 5px 0; }
+                            h3 { font-size: 14px; margin: 5px 0; }
+                            h4 { font-size: 12px; margin: 5px 0; }
+                            .print-date { 
+                                text-align: right; 
+                                font-size: 10px; 
+                                margin-bottom: 15px; 
+                            }
+                            .section-title {
+                                font-weight: bold;
+                                margin: 15px 0 8px 0;
+                                text-transform: uppercase;
+                                font-size: 11px;
+                                letter-spacing: 1px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="print-date">Dicetak: ${new Date().toLocaleString('id-ID')}</div>
+                        
+                        <div class="header">
+                            <h2>CAKENUY</h2>
+                            <h3>STRUK PESANAN</h3>
+                            <h4>Order #${completedOrderData.id}</h4>
+                            <div>${new Date().toLocaleString('id-ID')} WIB</div>
+                        </div>
+
+                        <div class="section-title">INFORMASI PELANGGAN</div>
+                        <div class="info-row">
+                            <span class="info-label">Nama:</span>
+                            <span>${completedOrderData.customerName}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">No. HP:</span>
+                            <span>${completedOrderData.phoneNumber}</span>
+                        </div>
+                        ${completedOrderData.email ? `
+                        <div class="info-row">
+                            <span class="info-label">Email:</span>
+                            <span>${completedOrderData.email}</span>
+                        </div>` : ''}
+                        <div class="info-row">
+                            <span class="info-label">Layanan:</span>
+                            <span>${completedOrderData.serviceIcon} ${completedOrderData.serviceName}</span>
+                        </div>
+                        ${completedOrderData.deliveryAddress ? `
+                        <div class="info-row">
+                            <span class="info-label">Alamat:</span>
+                            <span>${completedOrderData.deliveryAddress}</span>
+                        </div>` : ''}
+
+                        <div class="dotted-line"></div>
+
+                        <div class="section-title">INFORMASI PESANAN</div>
+                        <div class="info-row">
+                            <span class="info-label">Tgl Pesan:</span>
+                            <span>${completedOrderData.createdAt}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Tgl Ambil/Kirim:</span>
+                            <span>${completedOrderData.orderDateTime}</span>
+                        </div>
+                        ${completedOrderData.notes ? `
+                        <div class="info-row">
+                            <span class="info-label">Catatan:</span>
+                            <span>${completedOrderData.notes}</span>
+                        </div>` : ''}
+
+                        <div class="dotted-line"></div>
+
+                        <div class="section-title">DETAIL PESANAN</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left;">MENU</th>
+                                    <th style="text-align: center;">QTY</th>
+                                    <th style="text-align: right;">HARGA</th>
+                                    <th style="text-align: right;">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml}
+                            </tbody>
+                        </table>
+                        
+                        <div class="border-top">
+                            <div class="info-row" style="font-size: 16px; padding: 10px 0; font-weight: bold;">
+                                <span><strong>TOTAL PESANAN:</strong></span>
+                                <span><strong>Rp ${completedOrderData.totalAmount}</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="footer">
+                            <div><strong>Terima kasih telah memesan di Cakenuy!</strong></div>
+                            <div>WhatsApp: 0812-3456-7890</div>
+                            <div>Email: info@cakenuy.com</div>
+                            <div style="margin-top: 10px;">Simpan struk ini sebagai bukti pesanan</div>
+                        </div>
+                    </body>
+                    </html>
+                `;
+
+                // Open print window
+                const printWindow = window.open('', '_blank', 'width=600,height=800');
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                printWindow.focus();
+                
+                // Auto print after content loads
+                printWindow.onload = function() {
+                    setTimeout(() => {
+                        printWindow.print();
+                    }, 500);
+                };
+                </text>
+            }
+            else
+            {
+                <text>
+                alert('Tidak ada struk untuk di-print');
+                </text>
+            }
+        }
+
+        function downloadPDF() {
+            @if (Model.IsOrderCompleted && Model.CompletedOrder != null)
+            {
+                <text>
+                const { jsPDF } = window.jspdf;
+                const element = document.getElementById('receiptContent');
+                
+                html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    
+                    const imgWidth = 190;
+                    const pageHeight = 295;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    let heightLeft = imgHeight;
+                    
+                    let position = 10;
+                    
+                    // Add title
+                    pdf.setFontSize(16);
+                    pdf.setTextColor(255, 107, 157);
+                    pdf.text('Struk Pesanan - Cakenuy', 105, position, { align: 'center' });
+                    position += 10;
+                    
+                    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    
+                    while (heightLeft >= 0) {
+                        position = heightLeft - imgHeight + 10;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+                    
+                    pdf.save(`Struk-Pesanan-${completedOrderData.id}-Cakenuy.pdf`);
+                }).catch(error => {
+                    console.error('Error generating PDF:', error);
+                    alert('Terjadi kesalahan saat membuat PDF. Silakan coba lagi.');
+                });
+                </text>
+            }
+            else
+            {
+                <text>
+                alert('Tidak ada struk untuk di-download');
+                </text>
+            }
+        }
+
+        function newOrder() {
+            window.location.reload();
+        }
+
+        // Regular order functions (when no completed order)
+        function selectService(serviceId, serviceName) {
+                selectedServiceId = serviceId;
+                selectedServiceName = serviceName;
+                
+                // Update UI
+                document.getElementById('selectedServiceName').textContent = serviceName;
+                document.getElementById('selectedService').style.display = 'block';
+                
+                updateSubmitButton();
+                updatePrintButton();
+            }
+
+            function increaseQuantity(itemId) {
+                const input = document.getElementById(`qty_${itemId}`);
+                const currentValue = parseInt(input.value) || 0;
+                if (currentValue < 10) {
+                    input.value = currentValue + 1;
+                    updateQuantity(itemId, input.value);
+                }
+            }
+
+            function decreaseQuantity(itemId) {
+                const input = document.getElementById(`qty_${itemId}`);
+                const currentValue = parseInt(input.value) || 0;
+                if (currentValue > 0) {
+                    input.value = currentValue - 1;
+                    updateQuantity(itemId, input.value);
+                }
+            }
+
+            function updateQuantity(itemId, quantity) {
+                quantity = parseInt(quantity) || 0;
+                const item = menuItems.find(m => m.id === itemId);
+                
+                if (quantity > 0) {
+                    selectedItems[itemId] = {
+                        id: itemId,
+                        name: item.name,
+                        price: item.price,
+                        quantity: quantity,
+                        total: item.price * quantity
+                    };
+                } else {
+                    delete selectedItems[itemId];
+                }
+                
+                updateOrderSummary();
+                updateSubmitButton();
+                updatePrintButton();
+            }
+
+            function updateOrderSummary() {
+                const orderItemsDiv = document.getElementById('orderItems');
+                const totalAmountSpan = document.getElementById('totalAmount');
+                
+                if (Object.keys(selectedItems).length === 0) {
+                    orderItemsDiv.innerHTML = `
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                            <p>Belum ada item dipilih</p>
+                        </div>
+                    `;
+                    totalAmount = 0;
+                } else {
+                    let html = '';
+                    totalAmount = 0;
+                    
+                    Object.values(selectedItems).forEach(item => {
+                        html += `
+                            <div class="order-item mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>${item.name}</strong>
+                                        <br>
+                                        <small class="text-muted">${item.quantity}x Rp ${item.price.toLocaleString('id-ID')}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <strong class="text-pink">Rp ${item.total.toLocaleString('id-ID')}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        totalAmount += item.total;
+                    });
+                    
+                    orderItemsDiv.innerHTML = html;
+                }
+                
+                totalAmountSpan.textContent = `Rp ${totalAmount.toLocaleString('id-ID')}`;
+            }
+
+            function updateSubmitButton() {
+                const submitButton = document.getElementById('submitOrder');
+                const hasService = selectedServiceId !== null;
+                const hasItems = Object.keys(selectedItems).length > 0;
+                
+                submitButton.disabled = !(hasService && hasItems);
+            }
+
+            function updatePrintButton() {
+                const printBtn = document.getElementById('printBtn');
+                const clearBtn = document.getElementById('clearBtn');
+                const hasService = selectedServiceId !== null;
+                const hasItems = Object.keys(selectedItems).length > 0;
+                
+                if (hasService && hasItems) {
+                    printBtn.style.display = 'inline-block';
+                    clearBtn.style.display = 'inline-block';
+                } else {
+                    printBtn.style.display = 'none';
+                    clearBtn.style.display = 'none';
+                }
+            }
+
+            function clearOrder() {
+                if (confirm('Apakah Anda yakin ingin membersihkan semua pesanan?')) {
+                    // Reset all quantities
+                    Object.keys(selectedItems).forEach(itemId => {
+                        document.getElementById(`qty_${itemId}`).value = 0;
+                    });
+                    
+                    // Reset service selection
+                    document.querySelectorAll('input[name="NewOrder.ServiceId"]').forEach(radio => {
+                        radio.checked = false;
+                    });
+                    
+                    // Reset form fields
+                    document.querySelector('input[name="NewOrder.CustomerName"]').value = '';
+                    document.querySelector('input[name="NewOrder.PhoneNumber"]').value = '';
+                    document.querySelector('input[name="NewOrder.Email"]').value = '';
+                    document.querySelector('textarea[name="NewOrder.DeliveryAddress"]').value = '';
+                    document.querySelector('textarea[name="NewOrder.Notes"]').value = '';
+                    
+                    // Reset variables
+                    selectedItems = {};
+                    totalAmount = 0;
+                    selectedServiceId = null;
+                    selectedServiceName = '';
+                    
+                    // Update UI
+                    document.getElementById('selectedService').style.display = 'none';
+                    updateOrderSummary();
+                    updateSubmitButton();
+                    updatePrintButton();
+                }
+            }
+
+            // Form submission
+            document.getElementById('orderForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (!selectedServiceId || Object.keys(selectedItems).length === 0) {
+                    alert('Silakan pilih layanan dan minimal satu menu item');
+                    return;
+                }
+                
+                // Create hidden inputs for order items
+                const form = this;
+                
+                // Remove existing hidden inputs
+                const existingInputs = form.querySelectorAll('input[name^="OrderItems"]');
+                existingInputs.forEach(input => input.remove());
+                
+                // Add order items as hidden inputs
+                Object.values(selectedItems).forEach((item, index) => {
+                    const menuItemIdInput = document.createElement('input');
+                    menuItemIdInput.type = 'hidden';
+                    menuItemIdInput.name = `OrderItems[${index}].MenuItemId`;
+                    menuItemIdInput.value = item.id;
+                    form.appendChild(menuItemIdInput);
+                    
+                    const quantityInput = document.createElement('input');
+                    quantityInput.type = 'hidden';
+                    quantityInput.name = `OrderItems[${index}].Quantity`;
+                    quantityInput.value = item.quantity;
+                    form.appendChild(quantityInput);
+                    
+                    const unitPriceInput = document.createElement('input');
+                    unitPriceInput.type = 'hidden';
+                    unitPriceInput.name = `OrderItems[${index}].UnitPrice`;
+                    unitPriceInput.value = item.price;
+                    form.appendChild(unitPriceInput);
+                });
+                
+                // Add total amount
+                const totalInput = document.createElement('input');
+                totalInput.type = 'hidden';
+                totalInput.name = 'NewOrder.TotalAmount';
+                totalInput.value = totalAmount;
+                form.appendChild(totalInput);
+                
+                // Submit form
+                form.submit();
+            });
+
+            // Initialize datetime input with minimum value
+            document.addEventListener('DOMContentLoaded', function() {
+                const now = new Date();
+                const minDate = new Date(now.getTime() + (2 * 60 * 60 * 1000)); // Add 2 hours
+                
+                // Format for datetime-local input (YYYY-MM-DDTHH:MM) - no seconds
+                const formatDateTime = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    return `${year}-${month}-${day}T${hours}:${minutes}`;
+                };
+                
+                const datetimeInput = document.querySelector('input[type="datetime-local"]');
+                if (datetimeInput) {
+                    const minDateTime = formatDateTime(minDate);
+                    datetimeInput.min = minDateTime;
+                    
+                    // Set default value if empty
+                    if (!datetimeInput.value) {
+                        datetimeInput.value = minDateTime;
+                    }
+                }
+            });
+    </script>
+}
+
+<style>
+    input[type="datetime-local"] {
+        padding: 0.75rem;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        transition: border-color 0.3s ease;
+    }
+    
+    input[type="datetime-local"]:focus {
+        border-color: #ff6b9d;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 157, 0.25);
+    }
+    
+    .form-text {
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    .text-pink {
+        color: #ff6b9d !important;
+    }
+    
+    .bg-pink {
+        background: linear-gradient(135deg, #ff6b9d, #ff8fab) !important;
+    }
+    
+    .btn-pink {
+        background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-pink:hover {
+        background: linear-gradient(135deg, #ff5a8a, #ff7a9a);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+    }
+    
+    .btn-outline-pink {
+        border: 2px solid #ff6b9d;
+        color: #ff6b9d;
+        background: transparent;
+    }
+    
+    .btn-outline-pink:hover {
+        background: #ff6b9d;
+        color: white;
+    }
+    
+    .service-option {
+        position: relative;
+    }
+    
+    .service-radio {
+        display: none;
+    }
+    
+    .service-card {
+        display: block;
+        padding: 1.5rem;
+        border-radius: 15px;
+        text-decoration: none;
+        color: white;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        color: white;
+    }
+    
+    .service-check {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .service-radio:checked + .service-card {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        border: 3px solid #fff;
+    }
+    
+    .service-radio:checked + .service-card .service-check {
+        opacity: 1;
+    }
+    
+    .service-name {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .service-desc {
+        font-size: 0.875rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    
+    .menu-card {
+        border: 1px solid #e9ecef;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .menu-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(255, 107, 157, 0.1);
+    }
+    
+    .menu-image {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+    }
+    
+    .menu-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .menu-category {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(255, 107, 157, 0.9);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+        font-size: 0.75rem;
+    }
+    
+    .menu-info {
+        padding: 1rem;
+    }
+    
+    .menu-name {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .menu-desc {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    
+    .menu-price {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #ff6b9d;
+        margin-bottom: 1rem;
+    }
+    
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .quantity-input {
+        width: 60px;
+        text-align: center;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 0.25rem;
+    }
+    
+    .order-item {
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(255, 107, 157, 0.1);
+    }
+    
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        border: none;
+    }
+    
+    .sticky-top {
+        position: sticky;
+        top: 20px;
+    }
+    
+    @@media (max-width: 768px) {
+        .sticky-top {
+            position: relative;
+            top: auto;
+        }
+    }
+
+    @@media print {
+        .no-print {
+            display: none !important;
+        }
+    }
+
+    /* Receipt Specific Styles */
+    #receiptContent {
+        background: white;
+        font-family: 'Courier New', monospace;
+    }
+    
+    .receipt-info {
+        font-size: 0.9rem;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.25rem;
+        border-bottom: 1px dotted #ddd;
+    }
+    
+    .info-label {
+        font-weight: bold;
+        min-width: 100px;
+        flex-shrink: 0;
+    }
+    
+    .info-value {
+        text-align: right;
+        flex-grow: 1;
+        margin-left: 10px;
+    }
+    
+    .receipt-table {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+    }
+    
+    .receipt-table th {
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .receipt-table td {
+        padding: 0.5rem 0.25rem;
+    }
+</style>

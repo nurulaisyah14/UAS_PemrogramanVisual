@@ -1,0 +1,51 @@
+@page
+@model cakenuy.Pages.MenuModel
+@{
+    ViewData["Title"] = "Menu";
+}
+
+<div class="container" style="padding-top: 2rem; padding-bottom: 3rem;">
+    <h1 class="page-title">🧁 Menu Cakenuy</h1>
+    <p class="text-center text-muted mb-4">Pilih kue favorit Anda dan tambahkan ke keranjang</p>
+
+    <div class="product-grid">
+        @foreach (var item in Model.MenuItems)
+        {
+            <div class="product-card">
+                <img src="@item.ImageUrl" alt="@item.Name" class="product-image" 
+                     onerror="this.src='https://via.placeholder.com/400x300/ffb3d9/FFFFFF?text=@System.Uri.EscapeDataString(item.Name)'">
+                <div class="product-info">
+                    <h3 class="product-name">@item.Name</h3>
+                    <p class="product-description">@item.Description</p>
+                    <div class="product-price">Rp @item.Price.ToString("N0")</div>
+                    <button class="btn-add-cart" onclick="addToCart('@item.Id', '@Html.Raw(item.Name.Replace("'", "\\'"))', @item.Price, '@item.ImageUrl')">
+                        🛒 Tambah ke Keranjang
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.MenuItems.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">🧁</div>
+            <p class="empty-state-text">Menu belum tersedia. Silakan cek kembali nanti.</p>
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script src="~/js/cart.js"></script>
+    <script>
+        function addToCart(id, name, price, image) {
+            cartManager.addItem({
+                id: id,
+                name: name,
+                price: price,
+                image: image
+            });
+        }
+    </script>
+}

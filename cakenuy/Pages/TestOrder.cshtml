@@ -1,0 +1,135 @@
+@page
+@model cakenuy.Pages.TestOrderModel
+@{
+    ViewData["Title"] = "Test Order System";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center text-pink mb-4">🧪 Test Order System</h1>
+            
+            <div class="alert alert-info">
+                <h5>Integration Test Results:</h5>
+                <ul class="mb-0">
+                    <li><strong>Services Available:</strong> @Model.ServicesCount services loaded from database</li>
+                    <li><strong>Menu Items Available:</strong> @Model.MenuItemsCount items loaded from database</li>
+                    <li><strong>Database Connection:</strong> ✅ Working</li>
+                    <li><strong>Service Integration:</strong> ✅ Order page dynamically loads active services</li>
+                    <li><strong>Order System:</strong> ✅ Ready to accept orders</li>
+                </ul>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-pink text-white">
+                            <h5 class="mb-0">Available Services</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Services.Any())
+                            {
+                                @foreach (var service in Model.Services)
+                                {
+                                    <div class="service-item mb-2 p-2 border rounded">
+                                        <span class="badge @service.Color me-2">@service.IconDisplay</span>
+                                        <strong>@service.Name</strong>
+                                        <br>
+                                        <small class="text-muted">@service.Description</small>
+                                        <br>
+                                        <small class="badge @(service.IsActive ? "bg-success" : "bg-danger")">
+                                            @(service.IsActive ? "Active" : "Inactive")
+                                        </small>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted">No services found</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-pink text-white">
+                            <h5 class="mb-0">Available Menu Items</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.MenuItems.Any())
+                            {
+                                @foreach (var item in Model.MenuItems.Take(5))
+                                {
+                                    <div class="menu-item mb-2 p-2 border rounded">
+                                        <strong>@item.Name</strong> - <span class="text-pink">Rp @item.Price.ToString("N0")</span>
+                                        <br>
+                                        <small class="text-muted">@item.Description</small>
+                                        <br>
+                                        <small class="badge @(item.IsAvailable ? "bg-success" : "bg-danger")">
+                                            @(item.IsAvailable ? "Available" : "Unavailable")
+                                        </small>
+                                    </div>
+                                }
+                                @if (Model.MenuItems.Count > 5)
+                                {
+                                    <small class="text-muted">... and @(Model.MenuItems.Count - 5) more items</small>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted">No menu items found</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="/Cart" class="btn btn-pink btn-lg me-3">
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    Go to Order Page
+                </a>
+                <a href="/ManageServices" class="btn btn-outline-pink btn-lg">
+                    <i class="fas fa-cog me-2"></i>
+                    Manage Services
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-pink {
+        color: #ff6b9d !important;
+    }
+    
+    .bg-pink {
+        background: linear-gradient(135deg, #ff6b9d, #ff8fab) !important;
+    }
+    
+    .btn-pink {
+        background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-pink:hover {
+        background: linear-gradient(135deg, #ff5a8a, #ff7a9a);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+    }
+    
+    .btn-outline-pink {
+        border: 2px solid #ff6b9d;
+        color: #ff6b9d;
+        background: transparent;
+    }
+    
+    .btn-outline-pink:hover {
+        background: #ff6b9d;
+        color: white;
+    }
+</style>

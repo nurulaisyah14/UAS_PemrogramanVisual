@@ -1,0 +1,157 @@
+@page
+@model cakenuy.Pages.CheckoutModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="container" style="padding-top: 2rem; padding-bottom: 3rem;">
+    <h1 class="page-title">✅ Checkout</h1>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="card-aesthetic">
+                <h3 style="color: var(--pink-accent); margin-bottom: 1.5rem;">Informasi Penerima</h3>
+                
+                <form id="checkout-form">
+                    <div class="form-group">
+                        <label class="form-label">Nama Lengkap *</label>
+                        <input type="text" id="customer-name" class="form-control" required placeholder="Masukkan nama lengkap">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Nomor Telepon *</label>
+                        <input type="tel" id="customer-phone" class="form-control" required placeholder="08xx-xxxx-xxxx">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Alamat Lengkap *</label>
+                        <textarea id="customer-address" class="form-control" rows="3" required placeholder="Masukkan alamat lengkap untuk pengiriman"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Catatan Pesanan (Opsional)</label>
+                        <textarea id="order-notes" class="form-control" rows="2" placeholder="Tuliskan catatan khusus untuk pesanan Anda"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Metode Pembayaran *</label>
+                        <select id="payment-method" class="form-control" required>
+                            <option value="">Pilih metode pembayaran</option>
+                            <option value="transfer">Transfer Bank</option>
+                            <option value="cod">Cash on Delivery (COD)</option>
+                            <option value="e-wallet">E-Wallet (GoPay/OVO/Dana)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="cart-summary">
+                <h3 style="color: var(--pink-accent); margin-bottom: 1.5rem;">Ringkasan Pesanan</h3>
+                
+                <div id="checkout-items" style="max-height: 300px; overflow-y: auto; margin-bottom: 1.5rem;">
+                    <!-- Order items will be loaded here -->
+                </div>
+
+                <div class="summary-row">
+                    <span>Subtotal (<span id="item-count">0</span> item)</span>
+                    <span id="subtotal">Rp 0</span>
+                </div>
+
+                <div class="summary-row">
+                    <span>Biaya Pengiriman</span>
+                    <span id="shipping">Rp 15.000</span>
+                </div>
+
+                <div class="summary-row" style="border: none;">
+                    <span class="summary-total">Total</span>
+                    <span class="summary-total" id="total">Rp 0</span>
+                </div>
+
+                <button type="button" class="btn-pink" style="width: 100%; margin-top: 1rem;" onclick="placeOrder()">
+                    🎉 Buat Pesanan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/cart.js"></script>
+    <script>
+        function loadCheckoutSummary() {
+            const cart = cartManager.getCart();
+            
+            if (cart.length === 0) {
+                window.location.href = '/Menu';
+                return;
+            }
+
+            const itemsHtml = cart.map(item => `
+                <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--pink-light);">
+                    <div>
+                        <div style="font-weight: 600;">${item.name}</div>
+                        <div style="color: var(--text-muted); font-size: 0.9rem;">${item.quantity} x ${formatCurrency(item.price)}</div>
+                    </div>
+                    <div style="font-weight: 600; color: var(--pink-accent);">${formatCurrency(item.price * item.quantity)}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('checkout-items').innerHTML = itemsHtml;
+
+            const itemCount = cartManager.getItemCount();
+            const subtotal = cartManager.getTotal();
+            const shipping = 15000;
+            const total = subtotal + shipping;
+
+            document.getElementById('item-count').textContent = itemCount;
+            document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+            document.getElementById('shipping').textContent = formatCurrency(shipping);
+            document.getElementById('total').textContent = formatCurrency(total);
+        }
+
+        function placeOrder() {
+            const form = document.getElementById('checkout-form');
+            
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const orderData = {
+                orderId: generateOrderId(),
+                timestamp: new Date().toISOString(),
+                customer: {
+                    name: document.getElementById('customer-name').value,
+                    phone: document.getElementById('customer-phone').value,
+                    address: document.getElementById('customer-address').value,
+                    notes: document.getElementById('order-notes').value
+                },
+                paymentMethod: document.getElementById('payment-method').value,
+                items: cartManager.getCart(),
+                subtotal: cartManager.getTotal(),
+                shipping: 15000,
+                total: cartManager.getTotal() + 15000
+            };
+
+            // Save order to localStorage
+            localStorage.setItem('currentOrder', JSON.stringify(orderData));
+
+            // Clear cart
+            cartManager.clearCart();
+
+            // Redirect to receipt
+            window.location.href = '/Receipt';
+        }
+
+        function generateOrderId() {
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+            const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            return `ORD-${dateStr}-${randomNum}`;
+        }
+
+        loadCheckoutSummary();
+    </script>
+}

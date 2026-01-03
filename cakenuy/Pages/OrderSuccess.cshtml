@@ -1,0 +1,809 @@
+@page
+@model cakenuy.Pages.OrderSuccessModel
+@{
+    ViewData["Title"] = "Pesanan Berhasil";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Success Header -->
+            <div class="text-center mb-5">
+                <div class="success-icon mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                </div>
+                <h1 class="display-4 text-success mb-3">🎉 Pesanan Berhasil!</h1>
+                <p class="lead text-muted">Terima kasih telah memesan di Cakenuy. Pesanan Anda sedang diproses.</p>
+                
+                <!-- Print and Action Buttons -->
+                @if (Model.Order != null)
+                {
+                    <div class="d-flex justify-content-center gap-2 mb-4">
+                        <button type="button" class="btn btn-pink btn-lg" onclick="printReceipt()">
+                            <i class="fas fa-print me-2"></i>
+                            Print Struk
+                        </button>
+                        <button type="button" class="btn btn-outline-pink btn-lg" onclick="downloadPDF()">
+                            <i class="fas fa-file-pdf me-2"></i>
+                            Download PDF
+                        </button>
+                    </div>
+                }
+            </div>
+
+            @if (Model.Order != null)
+            {
+                <!-- Receipt/Struk Content -->
+                <div class="card shadow-lg border-0 mb-4" id="receiptContent">
+                    <div class="card-body p-4">
+                        <!-- Receipt Header -->
+                        <div class="text-center mb-4 pb-3 border-bottom">
+                            <h2 class="text-pink mb-2">🧁 Cakenuy</h2>
+                            <h4 class="mb-1">STRUK PESANAN</h4>
+                            <p class="text-muted mb-0">Order #@Model.Order.Id.ToString("D6")</p>
+                            <small class="text-muted">@DateTime.Now.ToString("dd MMMM yyyy, HH:mm") WIB</small>
+                        </div>
+
+                        <div class="row">
+                            <!-- Customer Information -->
+                            <div class="col-md-6 mb-4">
+                                <h5 class="text-pink mb-3 border-bottom pb-2">
+                                    <i class="fas fa-user me-2"></i>
+                                    INFORMASI PELANGGAN
+                                </h5>
+                                <div class="receipt-info">
+                                    <div class="info-row">
+                                        <span class="info-label">Nama:</span>
+                                        <span class="info-value">@Model.Order.CustomerName</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">No. HP:</span>
+                                        <span class="info-value">@Model.Order.PhoneNumber</span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(Model.Order.Email))
+                                    {
+                                        <div class="info-row">
+                                            <span class="info-label">Email:</span>
+                                            <span class="info-value">@Model.Order.Email</span>
+                                        </div>
+                                    }
+                                    <div class="info-row">
+                                        <span class="info-label">Layanan:</span>
+                                        <span class="info-value">
+                                            <span class="service-badge @Model.Order.Service?.Color">
+                                                @Model.Order.Service?.IconDisplay @Model.Order.Service?.Name
+                                            </span>
+                                        </span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(Model.Order.DeliveryAddress))
+                                    {
+                                        <div class="info-row">
+                                            <span class="info-label">Alamat:</span>
+                                            <span class="info-value">@Model.Order.DeliveryAddress</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Order Information -->
+                            <div class="col-md-6 mb-4">
+                                <h5 class="text-pink mb-3 border-bottom pb-2">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    INFORMASI PESANAN
+                                </h5>
+                                <div class="receipt-info">
+                                    <div class="info-row">
+                                        <span class="info-label">Tanggal Pesan:</span>
+                                        <span class="info-value">@Model.Order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Waktu Ambil/Kirim:</span>
+                                        <span class="info-value">@Model.Order.OrderDateTime.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Status:</span>
+                                        <span class="info-value">
+                                            <span class="badge @Model.Order.StatusColor">@Model.Order.StatusDisplay</span>
+                                        </span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(Model.Order.Notes))
+                                    {
+                                        <div class="info-row">
+                                            <span class="info-label">Catatan:</span>
+                                            <span class="info-value">@Model.Order.Notes</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Items -->
+                        <div class="mt-4">
+                            <h5 class="text-pink mb-3 border-bottom pb-2">
+                                <i class="fas fa-birthday-cake me-2"></i>
+                                DETAIL PESANAN
+                            </h5>
+                            <div class="table-responsive">
+                                <table class="table table-borderless receipt-table">
+                                    <thead>
+                                        <tr class="border-bottom">
+                                            <th class="ps-0">MENU</th>
+                                            <th class="text-center">QTY</th>
+                                            <th class="text-end">HARGA</th>
+                                            <th class="text-end pe-0">TOTAL</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.Order.OrderItems)
+                                        {
+                                            <tr>
+                                                <td class="ps-0">
+                                                    <div>
+                                                        <strong>@item.MenuItem?.Name</strong>
+                                                        @if (!string.IsNullOrEmpty(item.Notes))
+                                                        {
+                                                            <br>
+                                                            <small class="text-muted">Note: @item.Notes</small>
+                                                        }
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">@item.Quantity</td>
+                                                <td class="text-end">Rp @item.UnitPrice.ToString("N0")</td>
+                                                <td class="text-end pe-0"><strong>Rp @item.TotalPrice.ToString("N0")</strong></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Total Section -->
+                            <div class="border-top pt-3 mt-3">
+                                <div class="row">
+                                    <div class="col-8">
+                                        <h4 class="mb-0"><strong>TOTAL PESANAN:</strong></h4>
+                                    </div>
+                                    <div class="col-4 text-end">
+                                        <h4 class="mb-0 text-pink"><strong>Rp @Model.Order.TotalAmount.ToString("N0")</strong></h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="text-center mt-4 pt-4 border-top">
+                            <p class="mb-2"><strong>Terima kasih telah memesan di Cakenuy!</strong></p>
+                            <p class="text-muted mb-1">WhatsApp: 0812-3456-7890 | Email: info@cakenuy.com</p>
+                            <p class="text-muted mb-0">Simpan struk ini sebagai bukti pesanan</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Next Steps -->
+                <div class="card shadow border-0 mb-4">
+                    <div class="card-body text-center">
+                        <h5 class="text-pink mb-3">
+                            <i class="fas fa-clock me-2"></i>
+                            Langkah Selanjutnya
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="step-item">
+                                    <div class="step-icon">
+                                        <i class="fas fa-phone text-info"></i>
+                                    </div>
+                                    <h6>Konfirmasi</h6>
+                                    <p class="text-muted small">Kami akan menghubungi Anda dalam 15-30 menit untuk konfirmasi pesanan</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="step-item">
+                                    <div class="step-icon">
+                                        <i class="fas fa-utensils text-warning"></i>
+                                    </div>
+                                    <h6>Persiapan</h6>
+                                    <p class="text-muted small">Tim kami akan mulai mempersiapkan pesanan Anda dengan bahan terbaik</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="step-item">
+                                    <div class="step-icon">
+                                        <i class="fas fa-check text-success"></i>
+                                    </div>
+                                    <h6>Selesai</h6>
+                                    <p class="text-muted small">
+                                        @if (Model.Order.Service?.Name.ToLower().Contains("delivery") == true)
+                                        {
+                                            <text>Pesanan akan diantar ke alamat Anda sesuai waktu yang ditentukan</text>
+                                        }
+                                        else
+                                        {
+                                            <text>Pesanan siap diambil sesuai waktu yang ditentukan</text>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Action Buttons -->
+            <div class="text-center">
+                <a href="/" class="btn btn-pink btn-lg me-3">
+                    <i class="fas fa-home me-2"></i>
+                    Kembali ke Home
+                </a>
+                <a href="/Cart" class="btn btn-outline-pink btn-lg">
+                    <i class="fas fa-plus me-2"></i>
+                    Pesan Lagi
+                </a>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="text-center mt-5">
+                <div class="alert alert-info">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Butuh Bantuan?
+                    </h6>
+                    <p class="mb-0">
+                        Hubungi kami di <strong>WhatsApp: 0812-3456-7890</strong> atau 
+                        <strong>Email: info@cakenuy.com</strong> jika ada pertanyaan tentang pesanan Anda.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        // Order data from server
+        const orderData = {
+            id: '@Model.Order?.Id.ToString("D6")',
+            customerName: '@Html.Raw(Model.Order?.CustomerName?.Replace("'", "\\'"))',
+            phoneNumber: '@Model.Order?.PhoneNumber',
+            email: '@Model.Order?.Email',
+            serviceName: '@Model.Order?.Service?.Name',
+            serviceIcon: '@Model.Order?.Service?.IconDisplay',
+            deliveryAddress: '@Html.Raw(Model.Order?.DeliveryAddress?.Replace("'", "\\'"))',
+            orderDateTime: '@Model.Order?.OrderDateTime.ToString("dd/MM/yyyy HH:mm")',
+            createdAt: '@Model.Order?.CreatedAt.ToString("dd/MM/yyyy HH:mm")',
+            notes: '@Html.Raw(Model.Order?.Notes?.Replace("'", "\\'"))',
+            totalAmount: '@Model.Order?.TotalAmount.ToString("N0")',
+            items: [
+                @if (Model.Order?.OrderItems != null)
+                {
+                    @foreach (var item in Model.Order.OrderItems)
+                    {
+                        <text>{
+                            name: '@Html.Raw(item.MenuItem?.Name?.Replace("'", "\\'"))',
+                            quantity: @item.Quantity,
+                            unitPrice: '@item.UnitPrice.ToString("N0")',
+                            totalPrice: '@item.TotalPrice.ToString("N0")',
+                            notes: '@Html.Raw(item.Notes?.Replace("'", "\\'"))'
+                        },</text>
+                    }
+                }
+            ]
+        };
+
+        function printReceipt() {
+            // Create items HTML
+            let itemsHtml = '';
+            orderData.items.forEach(item => {
+                if (item.name) {
+                    itemsHtml += `
+                        <tr>
+                            <td style="padding: 5px 2px; border-bottom: 1px dotted #ccc;">
+                                <strong>${item.name}</strong>
+                                ${item.notes ? `<br><small>Note: ${item.notes}</small>` : ''}
+                            </td>
+                            <td style="padding: 5px 2px; text-align: center; border-bottom: 1px dotted #ccc;">${item.quantity}</td>
+                            <td style="padding: 5px 2px; text-align: right; border-bottom: 1px dotted #ccc;">Rp ${item.unitPrice}</td>
+                            <td style="padding: 5px 2px; text-align: right; border-bottom: 1px dotted #ccc;"><strong>Rp ${item.totalPrice}</strong></td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            const printContent = `
+                <html>
+                <head>
+                    <title>Struk Pesanan #${orderData.id} - Cakenuy</title>
+                    <style>
+                        body { 
+                            font-family: 'Courier New', monospace; 
+                            margin: 20px; 
+                            font-size: 12px;
+                            line-height: 1.4;
+                            max-width: 400px;
+                        }
+                        .text-center { text-align: center; }
+                        .text-right { text-align: right; }
+                        .border-bottom { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+                        .border-top { border-top: 2px solid #333; padding-top: 15px; margin-top: 15px; }
+                        .dotted-line { border-bottom: 1px dotted #333; margin: 10px 0; }
+                        .info-row { 
+                            display: flex; 
+                            justify-content: space-between; 
+                            margin-bottom: 5px;
+                            padding-bottom: 3px;
+                        }
+                        .info-label { font-weight: bold; }
+                        table { 
+                            width: 100%; 
+                            border-collapse: collapse; 
+                            margin: 10px 0;
+                        }
+                        th { 
+                            font-weight: bold; 
+                            border-bottom: 2px solid #333;
+                            padding: 5px 2px;
+                            font-size: 11px;
+                        }
+                        .total-row { 
+                            font-weight: bold; 
+                            font-size: 14px;
+                            border-top: 2px solid #333;
+                            border-bottom: 2px solid #333;
+                        }
+                        .header {
+                            text-align: center;
+                            margin-bottom: 20px;
+                            padding-bottom: 15px;
+                            border-bottom: 2px solid #333;
+                        }
+                        .footer {
+                            text-align: center;
+                            margin-top: 20px;
+                            padding-top: 15px;
+                            border-top: 2px solid #333;
+                            font-size: 10px;
+                        }
+                        h2 { font-size: 18px; margin: 5px 0; }
+                        h3 { font-size: 14px; margin: 5px 0; }
+                        h4 { font-size: 12px; margin: 5px 0; }
+                        .print-date { 
+                            text-align: right; 
+                            font-size: 10px; 
+                            margin-bottom: 15px; 
+                        }
+                        .section-title {
+                            font-weight: bold;
+                            margin: 15px 0 8px 0;
+                            text-transform: uppercase;
+                            font-size: 11px;
+                            letter-spacing: 1px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-date">Dicetak: ${new Date().toLocaleString('id-ID')}</div>
+                    
+                    <div class="header">
+                        <h2>🧁 CAKENUY</h2>
+                        <h3>STRUK PESANAN</h3>
+                        <h4>Order #${orderData.id}</h4>
+                        <div>${new Date().toLocaleString('id-ID')} WIB</div>
+                    </div>
+
+                    <div class="section-title">INFORMASI PELANGGAN</div>
+                    <div class="info-row">
+                        <span class="info-label">Nama:</span>
+                        <span>${orderData.customerName}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">No. HP:</span>
+                        <span>${orderData.phoneNumber}</span>
+                    </div>
+                    ${orderData.email ? `
+                    <div class="info-row">
+                        <span class="info-label">Email:</span>
+                        <span>${orderData.email}</span>
+                    </div>` : ''}
+                    <div class="info-row">
+                        <span class="info-label">Layanan:</span>
+                        <span>${orderData.serviceIcon} ${orderData.serviceName}</span>
+                    </div>
+                    ${orderData.deliveryAddress ? `
+                    <div class="info-row">
+                        <span class="info-label">Alamat:</span>
+                        <span>${orderData.deliveryAddress}</span>
+                    </div>` : ''}
+
+                    <div class="dotted-line"></div>
+
+                    <div class="section-title">INFORMASI PESANAN</div>
+                    <div class="info-row">
+                        <span class="info-label">Tgl Pesan:</span>
+                        <span>${orderData.createdAt}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Tgl Ambil/Kirim:</span>
+                        <span>${orderData.orderDateTime}</span>
+                    </div>
+                    ${orderData.notes ? `
+                    <div class="info-row">
+                        <span class="info-label">Catatan:</span>
+                        <span>${orderData.notes}</span>
+                    </div>` : ''}
+
+                    <div class="dotted-line"></div>
+
+                    <div class="section-title">DETAIL PESANAN</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">MENU</th>
+                                <th style="text-align: center;">QTY</th>
+                                <th style="text-align: right;">HARGA</th>
+                                <th style="text-align: right;">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
+                    </table>
+                    
+                    <div class="border-top">
+                        <div class="info-row total-row" style="font-size: 16px; padding: 10px 0;">
+                            <span><strong>TOTAL PESANAN:</strong></span>
+                            <span><strong>Rp ${orderData.totalAmount}</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        <div><strong>Terima kasih telah memesan di Cakenuy!</strong></div>
+                        <div>WhatsApp: 0812-3456-7890</div>
+                        <div>Email: info@cakenuy.com</div>
+                        <div style="margin-top: 10px;">Simpan struk ini sebagai bukti pesanan</div>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            // Open print window
+            const printWindow = window.open('', '_blank', 'width=600,height=800');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.focus();
+            
+            // Auto print after content loads
+            printWindow.onload = function() {
+                setTimeout(() => {
+                    printWindow.print();
+                }, 500);
+            };
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const element = document.getElementById('receiptContent');
+            
+            html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const imgWidth = 190;
+                const pageHeight = 295;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                
+                let position = 10;
+                
+                // Add title
+                pdf.setFontSize(16);
+                pdf.setTextColor(255, 107, 157);
+                pdf.text('Struk Pesanan - Cakenuy', 105, position, { align: 'center' });
+                position += 10;
+                
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight + 10;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                pdf.save(`Struk-Pesanan-${orderData.id}-Cakenuy.pdf`);
+            }).catch(error => {
+                console.error('Error generating PDF:', error);
+                alert('Terjadi kesalahan saat membuat PDF. Silakan coba lagi.');
+            });
+        }
+
+        // Auto focus on print button when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Optional: Auto print after 2 seconds
+            // setTimeout(function() {
+            //     printReceipt();
+            // }, 2000);
+        });
+    </script>
+}
+
+<style>
+    .text-pink {
+        color: #ff6b9d !important;
+    }
+    
+    .bg-pink {
+        background: linear-gradient(135deg, #ff6b9d, #ff8fab) !important;
+    }
+    
+    .btn-pink {
+        background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-pink:hover {
+        background: linear-gradient(135deg, #ff5a8a, #ff7a9a);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 157, 0.3);
+    }
+    
+    .btn-outline-pink {
+        border: 2px solid #ff6b9d;
+        color: #ff6b9d;
+        background: transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-pink:hover {
+        background: #ff6b9d;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 157, 0.3);
+    }
+    
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        border: none;
+    }
+    
+    .info-item {
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .service-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        color: white;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .step-item {
+        padding: 1rem;
+    }
+    
+    .step-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .step-item h6 {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .success-icon {
+        transform: scale(1);
+        opacity: 1;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 107, 157, 0.05);
+    }
+    
+    .alert-info {
+        background-color: rgba(255, 107, 157, 0.1);
+        border-color: rgba(255, 107, 157, 0.2);
+        color: #495057;
+    }
+    
+    .alert-info .alert-heading {
+        color: #ff6b9d;
+    }
+</style>
+    .text-pink {
+        color: #ff6b9d !important;
+    }
+    
+    .bg-pink {
+        background: linear-gradient(135deg, #ff6b9d, #ff8fab) !important;
+    }
+    
+    .btn-pink {
+        background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-pink:hover {
+        background: linear-gradient(135deg, #ff5a8a, #ff7a9a);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 157, 0.3);
+    }
+    
+    .btn-outline-pink {
+        border: 2px solid #ff6b9d;
+        color: #ff6b9d;
+        background: transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-pink:hover {
+        background: #ff6b9d;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 157, 0.3);
+    }
+    
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        border: none;
+    }
+    
+    .info-item {
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .service-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        color: white;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .step-item {
+        padding: 1rem;
+    }
+    
+    .step-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .step-item h6 {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .success-icon {
+        transform: scale(1);
+        opacity: 1;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 107, 157, 0.05);
+    }
+    
+    .alert-info {
+        background-color: rgba(255, 107, 157, 0.1);
+        border-color: rgba(255, 107, 157, 0.2);
+        color: #495057;
+    }
+    
+    .alert-info .alert-heading {
+        color: #ff6b9d;
+    }
+
+    /* Receipt Specific Styles */
+    #receiptContent {
+        background: white;
+        font-family: 'Courier New', monospace;
+    }
+    
+    .receipt-info {
+        font-size: 0.9rem;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.25rem;
+        border-bottom: 1px dotted #ddd;
+    }
+    
+    .info-label {
+        font-weight: bold;
+        min-width: 100px;
+        flex-shrink: 0;
+    }
+    
+    .info-value {
+        text-align: right;
+        flex-grow: 1;
+        margin-left: 10px;
+    }
+    
+    .receipt-table {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+    }
+    
+    .receipt-table th {
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .receipt-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+        
+        #receiptContent, #receiptContent * {
+            visibility: visible;
+        }
+        
+        #receiptContent {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+        
+        .btn, .alert, .step-item {
+            display: none !important;
+        }
+    }
+</style>

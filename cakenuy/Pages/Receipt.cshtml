@@ -1,0 +1,183 @@
+@page
+@model cakenuy.Pages.ReceiptModel
+@{
+    ViewData["Title"] = "Struk Pesanan";
+}
+
+<div class="container" style="padding-top: 2rem; padding-bottom: 3rem;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <button onclick="window.print()" class="btn-pink" style="margin-right: 1rem;">
+            🖨️ Print Struk
+        </button>
+        <button onclick="downloadPDF()" class="btn-pink">
+            📄 Download PDF
+        </button>
+    </div>
+
+    <div class="receipt" id="receipt-content">
+        <div class="receipt-header">
+            <div class="receipt-title">🧁 Cakenuy</div>
+            <p style="margin: 0.5rem 0; color: var(--text-muted);">Kue Lezat dengan Cinta</p>
+            <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Jl. Manis No. 123, Jakarta | Tel: (021) 12345678</p>
+        </div>
+
+        <div class="receipt-section">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span><strong>Order ID:</strong></span>
+                <span id="order-id"></span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span><strong>Tanggal:</strong></span>
+                <span id="order-date"></span>
+            </div>
+        </div>
+
+        <div class="receipt-section">
+            <h3>Informasi Pelanggan</h3>
+            <p style="margin: 0.25rem 0;"><strong>Nama:</strong> <span id="customer-name"></span></p>
+            <p style="margin: 0.25rem 0;"><strong>Telepon:</strong> <span id="customer-phone"></span></p>
+            <p style="margin: 0.25rem 0;"><strong>Alamat:</strong></p>
+            <p style="margin: 0.25rem 0 0.25rem 1rem;" id="customer-address"></p>
+            <p style="margin: 0.25rem 0;" id="order-notes-section"></p>
+        </div>
+
+        <div class="receipt-section">
+            <h3>Detail Pesanan</h3>
+            <div id="order-items">
+                <!-- Items will be loaded here -->
+            </div>
+        </div>
+
+        <div class="receipt-section">
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                <span>Subtotal</span>
+                <span id="subtotal-amount"></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                <span>Biaya Pengiriman</span>
+                <span id="shipping-amount"></span>
+            </div>
+            <div class="receipt-total">
+                <span>TOTAL</span>
+                <span id="total-amount"></span>
+            </div>
+        </div>
+
+        <div class="receipt-section">
+            <h3>Metode Pembayaran</h3>
+            <p id="payment-method"></p>
+        </div>
+
+        <div class="receipt-footer">
+            <p style="margin: 0.5rem 0; font-weight: 600;">Terima kasih atas pesanan Anda! 💕</p>
+            <p style="margin: 0.5rem 0; font-size: 0.9rem;">Pesanan Anda akan segera diproses dan dikirim</p>
+            <p style="margin: 0.5rem 0; font-size: 0.85rem; color: var(--text-muted);">
+                Untuk pertanyaan, hubungi kami di cakenuy@example.com atau (021) 12345678
+            </p>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;" class="no-print">
+        <a href="/Menu" class="btn-pink">🛒 Belanja Lagi</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="~/js/cart.js"></script>
+    <script>
+        function loadReceipt() {
+            const orderData = JSON.parse(localStorage.getItem('currentOrder'));
+            
+            if (!orderData) {
+                window.location.href = '/Menu';
+                return;
+            }
+
+            // Order info
+            document.getElementById('order-id').textContent = orderData.orderId;
+            const orderDate = new Date(orderData.timestamp);
+            document.getElementById('order-date').textContent = orderDate.toLocaleString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Customer info
+            document.getElementById('customer-name').textContent = orderData.customer.name;
+            document.getElementById('customer-phone').textContent = orderData.customer.phone;
+            document.getElementById('customer-address').textContent = orderData.customer.address;
+            
+            if (orderData.customer.notes) {
+                document.getElementById('order-notes-section').innerHTML = `<strong>Catatan:</strong> ${orderData.customer.notes}`;
+            }
+
+            // Payment method
+            const paymentMethods = {
+                'transfer': 'Transfer Bank',
+                'cod': 'Cash on Delivery (COD)',
+                'e-wallet': 'E-Wallet (GoPay/OVO/Dana)'
+            };
+            document.getElementById('payment-method').textContent = paymentMethods[orderData.paymentMethod] || orderData.paymentMethod;
+
+            // Order items
+            const itemsHtml = orderData.items.map(item => `
+                <div class="receipt-item">
+                    <div>
+                        <div style="font-weight: 600;">${item.name}</div>
+                        <div style="color: var(--text-muted); font-size: 0.9rem;">${item.quantity} x ${formatCurrency(item.price)}</div>
+                    </div>
+                    <div style="font-weight: 600;">${formatCurrency(item.price * item.quantity)}</div>
+                </div>
+            `).join('');
+            document.getElementById('order-items').innerHTML = itemsHtml;
+
+            // Amounts
+            document.getElementById('subtotal-amount').textContent = formatCurrency(orderData.subtotal);
+            document.getElementById('shipping-amount').textContent = formatCurrency(orderData.shipping);
+            document.getElementById('total-amount').textContent = formatCurrency(orderData.total);
+        }
+
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const receipt = document.getElementById('receipt-content');
+            
+            // Hide buttons temporarily
+            const buttons = document.querySelectorAll('.no-print, button');
+            buttons.forEach(btn => btn.style.display = 'none');
+
+            try {
+                const canvas = await html2canvas(receipt, {
+                    scale: 2,
+                    backgroundColor: '#ffffff'
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                const imgWidth = 190;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+                
+                const orderId = document.getElementById('order-id').textContent;
+                pdf.save(`Struk-Cakenuy-${orderId}.pdf`);
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Gagal membuat PDF. Silakan coba lagi.');
+            } finally {
+                // Show buttons again
+                buttons.forEach(btn => btn.style.display = '');
+            }
+        }
+
+        loadReceipt();
+    </script>
+}

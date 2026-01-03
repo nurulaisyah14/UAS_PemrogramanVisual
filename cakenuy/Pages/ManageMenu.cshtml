@@ -1,0 +1,286 @@
+@page
+@model cakenuy.Pages.ManageMenuModel
+@{
+    ViewData["Title"] = "Kelola Menu";
+}
+
+<div class="container" style="padding-top: 2rem; padding-bottom: 3rem;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title">🍰 Kelola Menu Cakenuy</h1>
+        <button class="btn-pink" onclick="openCreateModal(); return false;">
+            ➕ Tambah Menu Baru
+        </button>
+    </div>
+
+    <div class="menu-management-grid">
+        @foreach (var item in Model.MenuItems)
+        {
+            <div class="menu-management-card">
+                <div class="management-card-image-wrapper">
+                    <img src="@item.ImageUrl" alt="@item.Name" class="management-card-image" 
+                         onerror="this.src='https://via.placeholder.com/300x200/ffb3d9/FFFFFF?text=No+Image'">
+                    @if (!item.IsAvailable)
+                    {
+                        <span class="unavailable-badge">Tidak Tersedia</span>
+                    }
+                </div>
+                <div class="management-card-content">
+                    <h3 class="management-item-name">@item.Name</h3>
+                    <p class="management-item-category">@item.Category</p>
+                    <p class="management-item-description">@item.Description</p>
+                    <div class="management-item-price">Rp @item.Price.ToString("N0")</div>
+                    <div class="management-actions">
+                        <button class="btn-edit" onclick="openEditModal(@item.Id)">
+                            ✏️ Edit
+                        </button>
+                        <button class="btn-delete" onclick="confirmDelete(@item.Id, '@item.Name')">
+                            🗑️ Hapus
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.MenuItems.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">🧁</div>
+            <p class="empty-state-text">Belum ada menu. Klik tombol "Tambah Menu Baru" untuk mulai menambahkan menu.</p>
+        </div>
+    }
+</div>
+
+<!-- Create/Edit Modal -->
+<div id="menuModal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">🧁 Tambah Menu Baru</h2>
+            <button class="modal-close" onclick="closeModal()">✖️</button>
+        </div>
+        <form method="post" enctype="multipart/form-data" asp-page-handler="Create">
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            
+            <div class="form-group">
+                <label class="form-label">Nama Menu</label>
+                <input type="text" class="form-control" name="MenuItem.Name" required 
+                       placeholder="contoh: 🍫 Chocolate Delight">
+                <div class="text-danger" asp-validation-for="MenuItem.Name"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Deskripsi</label>
+                <textarea class="form-control" name="MenuItem.Description" rows="3" required
+                          placeholder="Jelaskan detail menu..."></textarea>
+                <div class="text-danger" asp-validation-for="MenuItem.Description"></div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Harga (Rp)</label>
+                    <input type="number" class="form-control" name="MenuItem.Price" required 
+                           min="0" step="1000" placeholder="150000">
+                    <div class="text-danger" asp-validation-for="MenuItem.Price"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Kategori</label>
+                    <select class="form-control" name="MenuItem.Category" required>
+                        <option value="">Pilih Kategori</option>
+                        <option value="Cake">Cake</option>
+                        <option value="Cupcake">Cupcake</option>
+                        <option value="Pie">Pie</option>
+                        <option value="Pastry">Pastry</option>
+                        <option value="Cookies">Cookies</option>
+                    </select>
+                    <div class="text-danger" asp-validation-for="MenuItem.Category"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Gambar Menu</label>
+                <input type="file" class="form-control" name="ImageFile" 
+                       accept="image/*" onchange="previewImageFile(this)">
+                <small class="form-text">Pilih file gambar (JPG, PNG, GIF). Maksimal 5MB.</small>
+                <div class="text-danger" asp-validation-for="ImageFile"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" name="MenuItem.IsAvailable" value="true" checked>
+                    <input type="hidden" name="MenuItem.IsAvailable" value="false">
+                    Tersedia untuk dijual
+                </label>
+            </div>
+
+            <div class="image-preview" id="imagePreview">
+                <img id="previewImg" src="" alt="Preview" style="display:none; max-width: 100%; border-radius: 10px;">
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Batal</button>
+                <button type="submit" class="btn-pink">💾 Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal-overlay" onclick="closeDeleteModalOnBackdrop(event)">
+    <div class="modal-content modal-small">
+        <div class="modal-header">
+            <h2>⚠️ Konfirmasi Hapus</h2>
+            <button class="modal-close" onclick="closeDeleteModal()">✖️</button>
+        </div>
+        <div class="modal-body">
+            <p>Apakah Anda yakin ingin menghapus menu "<strong id="deleteItemName"></strong>"?</p>
+            <p class="text-muted">Tindakan ini tidak dapat dibatalkan.</p>
+        </div>
+        <form id="deleteForm" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="deleteId" name="id">
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Batal</button>
+                <button type="submit" class="btn-danger" formaction="?handler=Delete">🗑️ Hapus</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Debug: Check if modal exists when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('menuModal');
+            console.log('Modal element found:', modal);
+            if (modal) {
+                console.log('Modal classes:', modal.className);
+            }
+        });
+
+        // Open Create Modal
+        function openCreateModal() {
+            const modal = document.getElementById('menuModal');
+            modal.classList.add('show');
+        }
+
+        // Open Edit Modal
+        async function openEditModal(id) {
+            try {
+                const response = await fetch(`?handler=Item&id=${id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const item = data.item;
+                    document.getElementById('modalTitle').textContent = '✏️ Edit Menu';
+                    // Set form for edit mode
+                    const form = document.getElementById('menuForm');
+                    form.setAttribute('asp-page-handler', 'Edit');
+                    form.action = `?handler=Edit&id=${id}`;
+                    
+                    document.getElementById('menuId').value = item.id;
+                    document.getElementById('menuName').value = item.name;
+                    document.getElementById('menuDescription').value = item.description;
+                    document.getElementById('menuPrice').value = item.price;
+                    document.getElementById('menuCategory').value = item.category;
+                    document.getElementById('menuImageFile').value = '';
+                    document.getElementById('menuIsAvailable').checked = item.isAvailable;
+                    
+                    if (item.imageUrl) {
+                        document.getElementById('previewImg').src = item.imageUrl;
+                        document.getElementById('previewImg').style.display = 'block';
+                    }
+                    
+                    document.getElementById('menuModal').classList.add('show');
+                }
+            } catch (error) {
+                console.error('Error loading menu item:', error);
+                alert('Gagal memuat data menu');
+            }
+        }
+
+        // Close Modal
+        function closeModal() {
+            document.getElementById('menuModal').classList.remove('show');
+        }
+
+        function closeModalOnBackdrop(event) {
+            if (event.target.id === 'menuModal') {
+                closeModal();
+            }
+        }
+
+        // Preview Image from File
+        function previewImageFile(input) {
+            const preview = document.getElementById('previewImg');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Hanya file gambar (JPG, PNG, GIF) yang diperbolehkan!');
+                    input.value = '';
+                    preview.style.display = 'none';
+                    return;
+                }
+                
+                // Validate file size (5MB max)
+                const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                if (file.size > maxSize) {
+                    alert('Ukuran file terlalu besar! Maksimal 5MB.');
+                    input.value = '';
+                    preview.style.display = 'none';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        // Preview Image from URL (kept for backward compatibility)
+        function previewImage(url) {
+            const preview = document.getElementById('previewImg');
+            if (url) {
+                preview.src = url;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        // Delete Confirmation
+        function confirmDelete(id, name) {
+            document.getElementById('deleteItemName').textContent = name;
+            document.getElementById('deleteId').value = id;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+        }
+
+        function closeDeleteModalOnBackdrop(event) {
+            if (event.target.id === 'deleteModal') {
+                closeDeleteModal();
+            }
+        }
+
+        // Close modals on ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+                closeDeleteModal();
+            }
+        });
+    </script>
+}
