@@ -16,7 +16,7 @@ Made with ❤️ by Nurul Aisyah
 # 📌 Tugas UAS
 # 🍰 Cakenuy — Deployment & Setup Guide
 
-> Panduan instalasi & konfigurasi aplikasi **Cakecute**  
+> Panduan instalasi & konfigurasi aplikasi **Cakenuy**  
 > Berbasis **IIS**, **MongoDB**, dan **SQL Server**
 
 ---
