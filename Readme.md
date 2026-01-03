@@ -137,9 +137,3 @@ User	user	user123
 📄 Struk Digital & PDF
 
 📱 Responsive Design
-```txt
-
-
-<div align="center">
-Made with ❤️ by Nurul Aisyah
-</div>
