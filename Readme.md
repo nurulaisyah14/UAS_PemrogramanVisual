@@ -137,11 +137,7 @@ User	user	user123
 📄 Struk Digital & PDF
 
 📱 Responsive Design
-
-🔗 Dokumentasi & Media
-Platform	Link
-💻 GitHub	https://github.com/username/sweet-delight-nusantara
-🎥 YouTube	https://www.youtube.com/watch?v=xxxxxxxxxxx
+```txt
 
 
 <div align="center">
