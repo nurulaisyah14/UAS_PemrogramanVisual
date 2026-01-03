@@ -1,19 +1,149 @@
-﻿EXEC sp_configure filestream_access_level, 2
-GO
-RECONFIGURE
-GO
+<div align="center">
+Made with ❤️ by Nurul Aisyah
+</div>
 
-CREATE DATABASE WebApiFileTable
-ON PRIMARY
-(Name = WebApiFileTable,
-FILENAME = 'D:\Databases\FileDB\DB\FTDB.mdf'),
-FILEGROUP FTFG CONTAINS FILESTREAM
-(NAME = WebApiFileTableFS,
-FILENAME='D:\Databases\FileDB\FS')
-LOG ON
-(Name = WebApiFileTableLog,
-FILENAME = 'D:\Databases\FileDB\DB\FTDBLog.ldf')
-WITH FILESTREAM (NON_TRANSACTED_ACCESS = FULL,
-DIRECTORY_NAME = N'WebApiFileTable');
-GO
+## 👤 Profil Mahasiswa
 
+| Atribut         | Keterangan            |
+| --------------- | --------------------- |
+| **Nama**        | Nurul Aisyah         |
+| **NIM**         | 312310476             |
+| **Kelas**       | TI.23.A.5             |
+| **Mata Kuliah** | Pemrograman Visual |
+| **Link Youtube** | https://youtu.be/VhA76W9E9sI |
+
+
+# 📌 Tugas UAS
+# 🍰 Cakenuy — Deployment & Setup Guide
+
+> Panduan instalasi & konfigurasi aplikasi **Cakecute**  
+> Berbasis **IIS**, **MongoDB**, dan **SQL Server**
+
+---
+
+## 🧰 Prasyarat
+
+Pastikan environment kamu sudah memiliki:
+
+- **Windows + IIS (Internet Information Services)**
+- **.NET Runtime / Hosting Bundle** (sesuai versi aplikasi)
+- **Microsoft SQL Server + SSMS**
+- **MongoDB**
+- (Opsional) **Git** untuk clone project
+
+---
+
+✨ *Simple • Modern • Friendly* ✨  
+
+![ASP.NET](https://img.shields.io/badge/ASP.NET%20Core-8.0-purple)
+![SQLite](https://img.shields.io/badge/Database-SQLite-blue)
+![Bootstrap](https://img.shields.io/badge/UI-Bootstrap%205-pink)
+![Status](https://img.shields.io/badge/Status-Development-success)
+
+📍 **Subang, Jawa Barat**
+
+</div>
+
+---
+
+## 📖 Tentang Proyek
+
+**Sweet Delight Nusantara** adalah aplikasi web yang dikembangkan untuk membantu **toko kue lokal** dalam mengelola operasional usaha yang sebelumnya masih dilakukan secara manual.
+
+Website ini dibuat untuk:
+- Mengelola menu kue secara terpusat  
+- Memudahkan pelanggan melakukan pemesanan online  
+- Membantu admin dan staff memproses pesanan  
+- Menghasilkan struk digital secara otomatis  
+
+---
+
+## 🎯 Tujuan Sistem
+
+- ✅ Mengurangi kesalahan pencatatan manual  
+- ✅ Mempercepat proses pemesanan  
+- ✅ Memberikan pengalaman pengguna yang lebih baik  
+- ✅ Mendukung digitalisasi usaha toko kue  
+
+---
+
+## ⚙️ Teknologi yang Digunakan
+
+```txt
+Backend   : ASP.NET Core 8.0 (Razor Pages)
+Frontend  : Bootstrap 5, CSS, JavaScript
+Database  : SQLite + Entity Framework Core
+Icons     : Font Awesome
+PDF       : jsPDF & html2canvas
+📂 Struktur Folder
+txt
+Salin kode
+SweetDelightNusantara
+│
+├── Data
+│   └── ApplicationDbContext.cs
+│
+├── Models
+│   ├── User.cs
+│   ├── MenuItem.cs
+│   ├── Order.cs
+│   ├── OrderItem.cs
+│   ├── Service.cs
+│   └── Employee.cs
+│
+├── Pages
+│   ├── Auth
+│   ├── Menu
+│   ├── Orders
+│   ├── Employees
+│   └── Services
+│
+├── wwwroot
+│   ├── css
+│   ├── js
+│   └── images
+│
+└── README.md
+🧩 Contoh Kode (Clean & Rapi)
+csharp
+Salin kode
+public class MenuItem
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public decimal Price { get; set; }
+    public bool IsAvailable { get; set; } = true;
+}
+🔐 Akun Demo
+Role	Username	Password
+Admin	admin	admin123
+User	user	user123
+
+🛒 Layanan Pemesanan
+🍽️ Dine In
+
+🥡 Take Away
+
+🚚 Delivery Order
+
+🧾 Fitur Unggulan
+🧁 Manajemen Menu
+
+👨‍🍳 Manajemen Karyawan
+
+🛍️ Pemesanan Online
+
+📄 Struk Digital & PDF
+
+📱 Responsive Design
+
+🔗 Dokumentasi & Media
+Platform	Link
+💻 GitHub	https://github.com/username/sweet-delight-nusantara
+🎥 YouTube	https://www.youtube.com/watch?v=xxxxxxxxxxx
+
+
+<div align="center">
+Made with ❤️ by Nurul Aisyah
+</div>
