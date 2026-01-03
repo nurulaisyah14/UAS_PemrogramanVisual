@@ -64,7 +64,52 @@ Website ini dibuat untuk:
 - ✅ Mempercepat proses pemesanan  
 - ✅ Memberikan pengalaman pengguna yang lebih baik  
 - ✅ Mendukung digitalisasi usaha toko kue  
+## 📘 Cara Menggunakan Aplikasi Cakenuy
 
+1. Menjalankan Aplikasi
+   - Buka project menggunakan Visual Studio
+   - Jalankan aplikasi (Run / dotnet run)
+   - Buka browser dan akses:
+     http://localhost:5004
+
+2. Login ke Sistem
+   - Akses halaman login:
+     http://localhost:5004/Login
+
+   - Gunakan akun demo berikut:
+     Admin
+     Username : admin
+     Password : admin123
+
+     User
+     Username : user
+     Password : user123
+
+3. Menggunakan Fitur Sistem
+   - Pilih menu kue yang tersedia
+   - Tambahkan menu ke keranjang
+   - Pilih layanan pemesanan:
+     • Dine In
+     • Take Away
+     • Delivery
+   - Isi data pelanggan
+   - Konfirmasi dan kirim pesanan
+
+4. Melihat Struk Pesanan
+   - Setelah pesanan berhasil:
+     • Struk digital akan ditampilkan otomatis
+     • Detail pesanan dan total pembayaran dapat dilihat
+
+5. Cetak atau Unduh Struk
+   - Struk dapat:
+     • Dicetak langsung melalui browser
+     • Diunduh dalam format PDF
+
+6. Logout dari Sistem
+   - Klik nama pengguna pada navigation bar
+   - Pilih menu Logout
+   - Atau akses langsung:
+     http://localhost:5004/Logout
 ---
 
 ## ⚙️ Teknologi yang Digunakan
