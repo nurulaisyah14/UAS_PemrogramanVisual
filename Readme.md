@@ -120,6 +120,9 @@ Website ini dibuat untuk:
 <img width="1629" height="783" alt="Screenshot 2026-01-04 122700" src="https://github.com/user-attachments/assets/5d55294b-b6a4-4834-97f9-f060c55009a9" />
 <img width="1613" height="697" alt="Screenshot 2026-01-04 122718" src="https://github.com/user-attachments/assets/ade466be-7590-4395-b072-2580df7d2e93" />
 
+### struk pemesanan
+<img width="1197" height="885" alt="Screenshot 2026-01-03 192553" src="https://github.com/user-attachments/assets/a4163f6f-c512-436b-8033-87581c425324" />
+
 
 ## ⚙️ Teknologi yang Digunakan
 
