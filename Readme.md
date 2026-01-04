@@ -40,7 +40,7 @@ Pastikan environment kamu sudah memiliki:
 ![Bootstrap](https://img.shields.io/badge/UI-Bootstrap%205-pink)
 ![Status](https://img.shields.io/badge/Status-Development-success)
 
-📍 **Subang, Jawa Barat**
+
 
 </div>
 
