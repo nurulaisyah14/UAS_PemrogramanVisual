@@ -112,7 +112,7 @@ Website ini dibuat untuk:
      http://localhost:5004/Logout
 ---
 
-## ⚙️ Tampilan Cakenuy
+## Tampilan Cakenuy
 <img width="489" height="847" alt="Screenshot 2026-01-04 122400" src="https://github.com/user-attachments/assets/6210d1f2-abbe-4683-95a6-04bc5b516149" />
 <img width="1770" height="988" alt="Screenshot 2026-01-04 122546" src="https://github.com/user-attachments/assets/a9a85430-ca44-4a48-8c20-f52e03f76873" />
 <img width="1753" height="837" alt="Screenshot 2026-01-04 122631" src="https://github.com/user-attachments/assets/3d4b2b25-b035-480b-9229-2b0289ca39a2" />
