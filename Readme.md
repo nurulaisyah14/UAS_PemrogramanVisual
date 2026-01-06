@@ -10,7 +10,7 @@ Made with ❤️ by Nurul Aisyah
 | **NIM**         | 312310476             |
 | **Kelas**       | TI.23.A.5             |
 | **Mata Kuliah** | Pemrograman Visual |
-| **Link Youtube** | wait |
+| **Link Youtube** | https://youtu.be/f6yoxeKIASo |
 
 
 # 📌 Tugas UAS
